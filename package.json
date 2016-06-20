@@ -2,12 +2,12 @@
   "name": "twocylinder",
   "version": "0.0.0",
   "description": "A lightweight 2D game engine for the browser",
-  "keywords": "HTML5, canvas, game, engine, 2D, two d, two dimensional, lightweight"
+  "keywords": "HTML5, canvas, game, engine, 2D, two d, two dimensional, lightweight",
   "repository": {
     "type": "git",
     "url": "git://github.com/irothenbaum/TwoCylinder.git"
   },
-  "main": "dist/twocylinder.js"
+  "main": "dist/twocylinder.js",
   "dependencies": {
       "grunt" : "*",
       "grunt-contrib-concat" : "*"
