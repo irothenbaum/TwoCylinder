@@ -1,0 +1,43 @@
+<html>
+<head>
+    
+    <!-- Load TwoCylinder -->
+    <script type="text/javascript" src="./js/underscore-min.js"></script>
+    <script type="text/javascript" src="../../dist/twocylinder.js"></script>
+    
+    <!-- Load Game code-->
+    <script type="text/javascript" src="./js/main.js"></script>
+    <script type="text/javascript" src="./js/sprites/bullet.js"></script>
+    <script type="text/javascript" src="./js/sprites/enemy.js"></script>
+    <script type="text/javascript" src="./js/sprites/player.js"></script>
+    <script type="text/javascript" src="./js/entities/bullet.js"></script>
+    <script type="text/javascript" src="./js/entities/enemy.js"></script>
+    <script type="text/javascript" src="./js/entities/player.js"></script>
+    
+    <!-- Start the game -->
+    <script type="text/javascript">
+        function onLoad(){
+            window.game = new MyGame.Game();
+            game.start();
+        }
+    </script>
+    
+    <style>
+        body{
+            width:100%;
+            height:100%;
+            margin:0;
+        }
+        
+        canvas{
+            background-color:#e4e4e4;
+            height:100%;
+            width:100%;
+        }
+    </style>
+</head>
+
+<body onload="onLoad();">
+    <canvas id="world"></canvas>
+</body>
+</html>
