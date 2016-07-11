@@ -3,7 +3,7 @@ module.exports = function(grunt) {
         concat : {
             options : {
                 separator : "\n"
-                , banner : "(function (root, factory) {if(typeof module === \"object\" && module.exports){module.exports = factory(require(\"_\"));} else if(typeof define === \"function\" && define.amd){define(\"TwoCylinder\",[\"_\"], factory);} else {root[\"TwoCylinder\"] = factory(root._);}}(this, function(_) {return new function(){var TwoCylinder = this;this.Engine = {};this.Entities = {};this.IO = {};this.Sprites = {};\n"
+                , banner : "(function (root, factory) {if(typeof module === \"object\" && module.exports){module.exports = factory(require(\"underscore\"));} else if(typeof define === \"function\" && define.amd){define(\"TwoCylinder\",[\"underscore\"], factory);} else {root[\"TwoCylinder\"] = factory(root._);}}(this, function(_) {return new function(){var TwoCylinder = this;this.Engine = {};this.Entities = {};this.IO = {};this.Sprites = {};\n"
                 , footer : "};}));"
             }
             , dist : {

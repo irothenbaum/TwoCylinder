@@ -72,16 +72,29 @@ TwoCylinder.IO.Touch = TwoCylinder.Engine.Generic.extend({
         },false);
     }
     /*
-     * This function can be overriden by extended objects, but by default we do nothing
+     * If this touch has an appearance, we draw it
      */
     ,draw : function(){
-        return true;
+        if(this.getAppearance()){
+            this.getAppearance().draw(
+                this.__view.getCanvas(), 
+                this.getBounding().getCenter().x,
+                this.getBounding().getCenter().y, 
+                this.__view.getRotation(),
+                this.__view.getScale(),
+                this
+            );
+        }
     }
     /*
      * Appearance will be important for extended objects wishing to give the touch zones a visual represenation
      */
     ,setAppearance : function(app){
         this.__appearance = app;
+    }
+    
+    ,getAppearance : function(app){
+        return this.__appearance;
     }
     
     /*

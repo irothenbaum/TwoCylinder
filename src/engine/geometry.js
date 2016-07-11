@@ -1,9 +1,7 @@
 // TODO:
 // lineCollidesBox
 // lineCollidesLine
-// lineCollidesPoint
 // boxCollidesLine
-// pointCollidesLine
 
 TwoCylinder.Engine.Geometry = {
 /***************************************************
@@ -45,21 +43,20 @@ TwoCylinder.Engine.Geometry = {
         // Gonna give a shit attempt at implementing this http://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
         var point1 = {x:box.origin_x, y:box.origin_y};
         var point2 = {x:box.origin_x + box.width, y:box.origin_y};
-        var point3 = {x:box.origin_x + box.width, y:box.origin_y+box.height};
-        var point4 = {x:box.origin_x, y:box.origin_y+box.height};
+        var point3 = {x:box.origin_x + box.width, y:box.origin_y + box.height};
+        var point4 = {x:box.origin_x, y:box.origin_y + box.height};
         
-        var line1 = {x1 : point1.x, y1:point1.y, x2:point2.x,y2:point2.y};
-        var line2 = {x1 : point2.x, y1:point2.y, x2:point3.x,y2:point3.y};
-        var line3 = {x1 : point3.x, y1:point3.y, x2:point4.x,y2:point4.y};
-        var line4 = {x1 : point4.x, y1:point4.y, x2:point1.x,y2:point1.y};
+        var line1 = [point1,point2];
+        var line2 = [point2,point3];
+        var line3 = [point3,point4];
+        var line4 = [point4,point1];
         
-        var retVal = 
-            TwoCylinder.Engine.Geometry.pointCollidesBox(circle, box)
-            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line1, circle)
-            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line2, circle)
-            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line3, circle)
-            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line4, circle);
-        return retVal;
+        return 
+            TwoCylinder.Engine.Geometry.pointCollidesBox(circle, box) 
+            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line1, circle, true)
+            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line2, circle, true) 
+            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line3, circle, true)  
+            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line4, circle, true);
     }
     ,boxCollidesPoint : function(box, point){
         return (
@@ -86,8 +83,8 @@ TwoCylinder.Engine.Geometry = {
     ,circleCollidesBox : function(circle, box){
         return TwoCylinder.Engine.Geometry.boxCollidesCircle(box,circle);
     }
-    ,circleCollidesLine : function(circle,line){
-        return TwoCylinder.Enginer.Geometry.lineCollidesCircle(line,cricle);
+    ,circleCollidesLine : function(circle,line, isSegment){
+        return TwoCylinder.Engine.Geometry.lineCollidesCircle(line,cricle,isSegment);
     }
     ,circleCollidesPoint : function(circle, point){
         return TwoCylinder.Engine.Geometry.pointCollidesCircle(point, circle);
@@ -97,17 +94,97 @@ TwoCylinder.Engine.Geometry = {
 /***************************************************
  * LINES
  ***************************************************/
-    ,lineCollidesCircle : function(line, circle){
-        // Gonna give a shit attempt at implementing this http://mathworld.wolfram.com/Circle-LineIntersection.html
-        var dx = line.x2 - line.x1;
-        var dy = line.y2 - line.y1;
-        var dr = Math.sqrt((dx*dx) + (dy*dy));
-        var r2 = circle.radius * circle.radius;
-        var D = (line.x1*line.y2) - (line.x2-line.y1);
+    // This function returns an array of up to length 2 with points indicating at what points
+    // the given circle is intersrected by the given line
+    ,lineIntersectsCircle : function(line, circle, isSegment){
+        var b = line[0];
+        var a = line[1];
         
-        var incidence = r2 * ( dr * dr ) - ( D*D );
+        // Calculate the euclidean distance between a & b
+        var eDistAtoB = Math.sqrt( Math.pow(b.x-a.x, 2) + Math.pow(b.y-a.y, 2) );
+
+        // compute the direction vector d from a to b
+        var d = { x : (b.x-a.x)/eDistAtoB, y : (b.y-a.y)/eDistAtoB };
+
+        // Now the line equation is x = dx*t + ax, y = dy*t + ay with 0 <= t <= 1.
+
+        // compute the value t of the closest point to the circle center (cx, cy)
+        var t = (d.x * (circle.x-a.x)) + (d.y * (circle.y-a.y));
+
+        // compute the coordinates of the point e on line and closest to c
+        var e = {
+            x : (t * d.x) + a.x
+            ,y : (t * d.y) + a.y 
+        }
+
+        // Calculate the euclidean distance between circle & e
+        eDistCtoE = Math.sqrt( Math.pow(e.x-circle.x, 2) + Math.pow(e.y-circle.y, 2) );
+
+        var retVal = [];
         
-        return incidence > 0;
+        // test if the line intersects the circle
+        if( eDistCtoE < circle.radius ) {
+            // compute distance from t to circle intersection point
+            var dt = Math.sqrt( Math.pow(circle.radius, 2) - Math.pow(eDistCtoE, 2));
+
+            // compute first intersection point
+            var f = { 
+                x : ((t-dt) * d.x) + a.x
+                ,y : ((t-dt) * d.y) + a.y
+            };
+            
+            if(!isSegment || TwoCylinder.Engine.Geometry.lineCollidesPoint(line, f, true)){
+                retVal.push(f);
+            }
+
+            // compute second intersection point
+            var g = {
+                x : ((t+dt) * d.x) + a.x
+                ,y : ((t+dt) * d.y) + a.y
+            };
+            
+            if(!isSegment || TwoCylinder.Engine.Geometry.lineCollidesPoint(line, g, true)){
+                retVal.push(g);
+            }
+        } else if (parseInt(eDistCtoE) === parseInt(circle.radius)) {
+            if(!isSegment || TwoCylinder.Engine.Geometry.lineCollidesPoint(line, e, true)){
+                retVal.push(e);
+            }
+        } else {
+            // do nothing, no intersection
+        }
+        
+        return retVal;
+    }
+    
+    // true IFF a line passes through or tangent to a given circle
+    ,lineCollidesCircle : function(line, circle, isSegment){
+        var intersects = TwoCylinder.Engine.Geometry.lineIntersectsCircle(line, circle, isSegment);
+        return intersects.length > 0 || TwoCylinder.Engine.Geometry.pointCollidesCircle(line[0],circle);
+    }
+    
+    ,lineCollidesPoint : function(line, point, isSegment){
+        var angleToPoint1 = TwoCylinder.Engine.Geometry.angleToPoint(line[0],point);
+        var angleToPoint2 = TwoCylinder.Engine.Geometry.angleToPoint(line[1],point);
+        
+        var retVal = angleToPoint1 == angleToPoint2;
+
+        // if the angle is off, we swap the order of two of the points for one of the measurements
+        // this simulates the 180 degree check
+        if(!retVal){
+            var angleToPoint2 = TwoCylinder.Engine.Geometry.angleToPoint(point, line[1]);
+            var retVal = angleToPoint1 == angleToPoint2;
+        }
+
+        if(retVal && isSegment){
+            var betweenPoints = TwoCylinder.Engine.Geometry.distanceToPoint(line[0],point) 
+                + TwoCylinder.Engine.Geometry.distanceToPoint(line[1],point) 
+                == TwoCylinder.Engine.Geometry.distanceToPoint(line[0],line[1]);
+            
+            retVal = betweenPoints;
+        }
+        
+        return retVal;
     }
     
     
@@ -126,6 +203,9 @@ TwoCylinder.Engine.Geometry = {
                 && 
                 ( point1.y == point2.y ) 
         );
+    }
+    ,pointCollidesLine : function(point, line){
+        return TwoCylinder.Engine.Geometry.lineCollidesPoint(line,point);
     }
     
 /***************************************************

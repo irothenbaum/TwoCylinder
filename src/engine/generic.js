@@ -13,7 +13,7 @@ TwoCylinder.Engine.Generic = TwoCylinder.Engine.Root.extend({
         return this._bounding;
     }
     ,setBounding : function(b){
-        if(!b && ! (b instanceof TwoCylinder.Enginer.Bounding)){
+        if(!b && ! (b instanceof TwoCylinder.Engine.Bounding)){
             throw "All objects must have a true bounding";
         }
         return this._bounding = b;

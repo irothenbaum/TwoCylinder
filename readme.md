@@ -12,7 +12,7 @@ TwoCylinder is a lightweight 2D game engine for the web browser. It uses native 
   - multiple touch (and mouse) handling
   - built in, and extensible, core classes
       - ( Entity, Appearance, Bounding, Touch, and View )
-  - exmaple mini-game provided
+  - example mini-game provided
 
 ### Runtime Dependencies
 

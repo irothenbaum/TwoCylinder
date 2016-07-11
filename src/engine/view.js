@@ -22,10 +22,6 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         this.__ios = [];
         this.__key = 0;
     }
-    ,getCanvas : function(){
-        return this.__canvas;
-    }
-
     ,clearCanvas : function(){
         this.__canvas.getContext('2d').clearRect(0,0,this.__canvas.width,this.__canvas.height);
     }
@@ -59,11 +55,9 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
                 var that = this;
                 //then we draw the instance with this view's translations & transformations included
                 inst.draw(
-                    this.__canvas
+                    this
                     ,inst.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x
                     ,inst.getBounding().getCenter().y - this.getBounding().getContainingRectangle().origin_y
-                    ,this._rotation
-                    ,this._scale
                 );
             }
         }
@@ -74,8 +68,29 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
             ios[i].draw();
         }
     }
+/****************************************************************************
+GETTER AND SETTER FUNCTIONS
+****************************************************************************/
+    ,getCanvas : function(){
+        return this.__canvas;
+    }
+    ,getWorld : function(){
+        return this.__world;
+    }
     ,setWorld : function(world){
         this.__world = world;
+    }
+    ,getRotation : function(){
+        return this._rotation;
+    }
+    ,setRotation : function(r){
+        this._rotation = r;
+    }
+    ,getScale : function(){
+        return this._scale;
+    }
+    ,setRotation : function(s){
+        this._scale = s;
     }
 /****************************************************************************
 IO FUNCTIONS

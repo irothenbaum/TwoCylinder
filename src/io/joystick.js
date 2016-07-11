@@ -71,8 +71,8 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
     ,offOperate : function(){
         delete this.__operateFunction; 
     }
-    ,draw : function(){
-        options = {
+    ,getDrawOptions : function(){
+        var options = {
             stick : this.getBounding().getCenter()
             ,operating : this.isDown()
         }
@@ -81,16 +81,7 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
             var radius = Math.min(this._defaultRadius / this.__pullRatio, this._previousEvent.speed);
             options.stick = TwoCylinder.Engine.Geometry.pointFromAngle(options.stick, this._previousEvent.angle, radius);
         }
-
-        this.__appearance.draw(
-            this.__view.getCanvas()
-            ,this.getBounding().getCenter().x
-            ,this.getBounding().getCenter().y
-            ,0
-            ,1
-            ,options
-        );
         
-        return true;
+        return options;
     }
 }); 

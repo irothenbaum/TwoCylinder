@@ -19,7 +19,7 @@ TwoCylinder.Engine.Appearance = TwoCylinder.Engine.Generic.extend({
         context.stroke();
     }
     
-    ,draw : function(canvas,x,y,rotation,scale,options){
-        return this.drawFunction.apply(canvas,[x,y,rotation,scale,options]);
+    ,draw : function(canvas,x,y,rotation,scale,entity){
+        return this.drawFunction.apply(canvas,[x,y,rotation,scale,entity]);
     }
 });

@@ -38,8 +38,14 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
     // draw is called by a view.
     // the view passes a callback function which is called IFF this instance is to be drawn
     // passed to that function is important information that will be forwarded to the Instance's this.__appearance
-    ,draw : function(canvas, center_x, center_y, view_rotation, view_scale){
-        this.getAppearance().draw(canvas, center_x, center_y, view_rotation * this._rotation, view_scale);
+    ,draw : function(view, center_x, center_y){
+        this.getAppearance().draw(
+                view.getCanvas(), 
+                center_x, center_y, 
+                view.getRotation() * this._rotation, 
+                view.getScale(), 
+                this
+        );
     }
     ,preStep: function(worldClock){
         return;
@@ -50,6 +56,10 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
                 x : this.getBounding().getCenter().x + this._speed * Math.cos(this.getDirection())
                 ,y : this.getBounding().getCenter().y + this._speed * Math.sin(this.getDirection())
             });
+            
+            if(this.getAppearance()){
+                this.getAppearance().getBounding().setCenter(this.getBounding().getCenter());
+            }
         }
     }
     ,postStep: function(worldClock){
@@ -152,9 +162,6 @@ COLLISIONS AND COLLISION CHECKING
     
     // This function defines how to draw this instance
     ,getAppearance : function(){
-        if(this.__appearance){
-            this.__appearance.getBounding().setCenter(this.getBounding().getCenter());
-        }
         return this.__appearance; 
     }
     
