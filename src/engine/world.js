@@ -110,8 +110,8 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
  INSTANCE FUNCTIONS
  ****************************************************************************/    
     ,removeInstance : function(instance){
-        this.__removeFromCollisionGroup(instance);
         if(instance.__id){
+            this.__removeFromCollisionGroup(instance);
             for(var i=0; i<this.__instances.length; i++){
                 if(this.__instances[i].__id == instance.__id){
                     this.__instances.splice(i,1);
