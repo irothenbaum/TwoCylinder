@@ -33,7 +33,7 @@ TwoCylinder.IO.Event = TwoCylinder.Engine.BoundingPoint.extend({
         
         this.timestamp = Date.now();
     }
-    ,linkEvent(evt){
+    ,linkEvent : function(evt){
         // we want them to only link events
         if(evt instanceof TwoCylinder.IO.Event){
             this.linked_event = evt; 

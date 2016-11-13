@@ -15,6 +15,7 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
         this._fps = options.fps || 30;
         
         this.__instances = [];
+        this.__particleEmitters = [];
         this.__collisionGroups = {};
         this.__views = [];
         this.__background = options.background || new TwoCylinder.Engine.Background();
@@ -30,13 +31,19 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     ,start : function(){
         var that = this;
         this.__intervalId = setInterval(function(){
-            that.loop.apply(that,[]);
+            try{
+                that.loop.apply(that,[]);
+            } catch (e) {
+                that.exit(e);
+            }
         }, 1000 / this._fps);
     }
     
     ,__preStep : function(time){
+        var i;
+
         // we have each instance perform a frame step. 
-        for(var i=0; i<this.__instances.length; i++){
+        for(i=0; i<this.__instances.length; i++){
             if(this.__instances[i]){
                 this.__instances[i].preStep(time);
             }
@@ -44,37 +51,57 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     }
     
     ,__postStep : function(time){
-        // we have each instance perform a frame step. 
-        for(var i=0; i<this.__instances.length; i++){
+        var i;
+        var obj;
+
+            // we have each instance perform a frame step.
+        for(i=0; i<this.__instances.length; i++){
             if(this.__instances[i]){
-                var obj = this.__instances[i].postStep(time);
+                obj = this.__instances[i].postStep(time);
             }
         }
     }
     
     ,loop : function(){
         this.__preStep(++this.__clock);
-        
+        var i;
+        var j;
+        var k;
+        var part;
+        var me;
+        var other;
+        var obj;
+        var instanceCollisionGroups;
+        var group;
+
+        // we have each instance perform a frame step.
+        for(i=0; i<this.__particleEmitters.length; i++){
+            if(this.__particleEmitters[i]){
+                part = this.__particleEmitters[i];
+                part.step(this.__clock);
+            }
+        }
+
         // we have each instance perform a frame step. 
-        for(var i=0; i<this.__instances.length; i++){
+        for(i=0; i<this.__instances.length; i++){
             if(this.__instances[i]){
-                var obj = this.__instances[i];
+                obj = this.__instances[i];
                 obj.step(this.__clock);
             }
         }
-        
+
         // check for collisions
-        for(var i=0; i<this.__instances.length; i++){
+        for(i=0; i<this.__instances.length; i++){
             if(this.__instances[i].hasCollisionChecking()){
-                var me = this.__instances[i];
-                var instanceCollisionGroups = me.getCollidableGroups();
+                me = this.__instances[i];
+                instanceCollisionGroups = me.getCollidableGroups();
                 
                 // for each group, we want to search each of the elements in the world of that group
-                for(var j=0; j<instanceCollisionGroups.length; j++){
-                    var group = instanceCollisionGroups[j];
+                for(j=0; j<instanceCollisionGroups.length; j++){
+                    group = instanceCollisionGroups[j];
                     if(this.__collisionGroups[group] && this.__collisionGroups[group].length){
-                        for(var k=0; k<this.__collisionGroups[group].length; k++){
-                            var other = this.__collisionGroups[group][k];
+                        for(k=0; k<this.__collisionGroups[group].length; k++){
+                            other = this.__collisionGroups[group][k];
                             
                             // cannot collide with self
                             if( me.__id == other.__id ){
@@ -90,9 +117,9 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
                 }
             }
         }
-        
+
         // for every view attached to this world, we have them draw
-        for(var i=0; i<this.__views.length; i++){
+        for(i=0; i<this.__views.length; i++){
             if(this.__views[i]){
                 this.__views[i].draw(this.__clock);
             }
@@ -110,9 +137,10 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
  INSTANCE FUNCTIONS
  ****************************************************************************/    
     ,removeInstance : function(instance){
+        var i;
         if(instance.__id){
             this.__removeFromCollisionGroup(instance);
-            for(var i=0; i<this.__instances.length; i++){
+            for(i=0; i<this.__instances.length; i++){
                 if(this.__instances[i].__id == instance.__id){
                     this.__instances.splice(i,1);
                     break;
@@ -160,6 +188,29 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     }
     
 /****************************************************************************
+PARTICLE FUNCTIONS
+****************************************************************************/
+   ,addParticleEmitter : function(particle){
+       var that = this;
+       this.__particleEmitters.push(particle);
+       
+       if (particle.getLifetime() > 0) {
+           setTimeout(function(){
+               that.ParticleEmitter(particle);
+           },particle.getLifetime());
+       }
+       
+       return particle;
+   }
+   
+   ,removeParticleEmitter : function(particle){
+       // TODO?
+   }
+
+   ,getParticleEmitters : function() {
+        return this.__particleEmitters;
+    }
+/****************************************************************************
 BACKGROUND FUNCTIONS
 ****************************************************************************/
     ,setBackground : function(background){
@@ -174,16 +225,19 @@ HELPER FUNCTIONS
 ****************************************************************************/    
     ,__addToCollisionGroup : function(instance){
         var group = instance.getCollisionGroup();
+
         if(!this.__collisionGroups[group]){
             this.__collisionGroups[group] = [];
         }
         this.__collisionGroups[group].push(instance);
     }
     ,__removeFromCollisionGroup : function(instance){
+        var i;
         var group = instance.getCollisionGroup();
-        for(var i=0; i<this.__collisionGroups[group].length; i++){
-            if(this.__instances[i].__id == instance.__id){
-                this.__collisionGroups[group].splice(i,0);
+
+        for(i=0; i<this.__collisionGroups[group].length; i++){
+            if(this.__collisionGroups[group][i].__id == instance.__id){
+                this.__collisionGroups[group].splice(i,1);
                 break;
             }
         }

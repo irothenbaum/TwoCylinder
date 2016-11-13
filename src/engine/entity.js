@@ -41,7 +41,8 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
     ,draw : function(view, center_x, center_y){
         this.getAppearance().draw(
                 view.getCanvas(), 
-                center_x, center_y, 
+                center_x, 
+                center_y, 
                 view.getRotation() * this._rotation, 
                 view.getScale(), 
                 this

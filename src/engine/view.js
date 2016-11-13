@@ -53,7 +53,8 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
             // if this instance's appearance is inside this view box
             if( this.collides( inst.getAppearance().getBounding() ) ){
                 var that = this;
-                //then we draw the instance with this view's translations & transformations included
+                //then we draw the instance and pass the view so it can reference the view's
+                //transitions and transformation (rotation, scale, etc)
                 inst.draw(
                     this
                     ,inst.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x

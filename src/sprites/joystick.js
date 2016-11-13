@@ -14,9 +14,9 @@ TwoCylinder.Sprites.Joystick = TwoCylinder.Engine.Appearance.extend({
         this._super('initialize',options);
         
     }
-    ,drawFunction : function(x,y,rotation,scale,joystick){
+    ,draw : function(canvas,x,y,rotation,scale,joystick){
         var options = joystick.getDrawOptions();
-        var context = this.getContext('2d');
+        var context = canvas.getContext('2d');
         
         // if the joystick is being operated, we draw the binding circle
         if(options.operating){

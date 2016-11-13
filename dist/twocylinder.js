@@ -114,7 +114,6 @@ TwoCylinder.Engine.Geometry = (function(){
             return xOverlap && yOverlap;
         }
         ,boxCollidesCircle : function(box, circle){
-            // Gonna give a shit attempt at implementing this http://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
             var point1 = {x:box.origin_x, y:box.origin_y};
             var point2 = {x:box.origin_x + box.width, y:box.origin_y};
             var point3 = {x:box.origin_x + box.width, y:box.origin_y + box.height};
@@ -171,7 +170,7 @@ TwoCylinder.Engine.Geometry = (function(){
  * LINES
  ***************************************************/
         // This function returns an array of up to length 2 with points indicating at what points
-        // the given circle is intersrected by the given line
+        // the given circle is intersected by the given line
         ,lineIntersectsCircle : function(line, circle, isSegment){
             var b = line[0];
             var a = line[1];
@@ -343,9 +342,9 @@ TwoCylinder.Engine.Appearance = TwoCylinder.Engine.Generic.extend({
     initialize : function(options){
         this._super('initialize',options);
     }
-    // drawFunctions should assume the context of the canvas drawing them
-    ,drawFunction : function(x,y,rotation,scale,options){
-        var context = this.getContext('2d');
+    
+    ,draw : function(canvas,x,y,rotation,scale,entity){
+        var context = canvas.getContext('2d');
         context.beginPath();
         context.arc(x, y, 20, 0, 2 * Math.PI, false);
         context.fillStyle = 'grey';
@@ -353,10 +352,6 @@ TwoCylinder.Engine.Appearance = TwoCylinder.Engine.Generic.extend({
         context.lineWidth = 5;
         context.strokeStyle = '#333333';
         context.stroke();
-    }
-    
-    ,draw : function(canvas,x,y,rotation,scale,entity){
-        return this.drawFunction.apply(canvas,[x,y,rotation,scale,entity]);
     }
 });
 /*
@@ -402,7 +397,8 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
     ,draw : function(view, center_x, center_y){
         this.getAppearance().draw(
                 view.getCanvas(), 
-                center_x, center_y, 
+                center_x, 
+                center_y, 
                 view.getRotation() * this._rotation, 
                 view.getScale(), 
                 this
@@ -659,7 +655,8 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
             // if this instance's appearance is inside this view box
             if( this.collides( inst.getAppearance().getBounding() ) ){
                 var that = this;
-                //then we draw the instance with this view's translations & transformations included
+                //then we draw the instance and pass the view so it can reference the view's
+                //transitions and transformation (rotation, scale, etc)
                 inst.draw(
                     this
                     ,inst.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x
@@ -775,7 +772,11 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     ,start : function(){
         var that = this;
         this.__intervalId = setInterval(function(){
-            that.loop.apply(that,[]);
+            try{
+                that.loop.apply(that,[]);
+            } catch (e) {
+                that.exit(e);
+            }
         }, 1000 / this._fps);
     }
     
@@ -927,8 +928,8 @@ HELPER FUNCTIONS
     ,__removeFromCollisionGroup : function(instance){
         var group = instance.getCollisionGroup();
         for(var i=0; i<this.__collisionGroups[group].length; i++){
-            if(this.__instances[i].__id == instance.__id){
-                this.__collisionGroups[group].splice(i,0);
+            if(this.__collisionGroups[group][i].__id == instance.__id){
+                this.__collisionGroups[group].splice(i,1);
                 break;
             }
         }
@@ -1666,9 +1667,9 @@ TwoCylinder.Sprites.Joystick = TwoCylinder.Engine.Appearance.extend({
         this._super('initialize',options);
         
     }
-    ,drawFunction : function(x,y,rotation,scale,joystick){
+    ,draw : function(canvas,x,y,rotation,scale,joystick){
         var options = joystick.getDrawOptions();
-        var context = this.getContext('2d');
+        var context = canvas.getContext('2d');
         
         // if the joystick is being operated, we draw the binding circle
         if(options.operating){

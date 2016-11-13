@@ -41,7 +41,6 @@ TwoCylinder.Engine.Geometry = (function(){
             return xOverlap && yOverlap;
         }
         ,boxCollidesCircle : function(box, circle){
-            // Gonna give a shit attempt at implementing this http://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
             var point1 = {x:box.origin_x, y:box.origin_y};
             var point2 = {x:box.origin_x + box.width, y:box.origin_y};
             var point3 = {x:box.origin_x + box.width, y:box.origin_y + box.height};
@@ -98,7 +97,7 @@ TwoCylinder.Engine.Geometry = (function(){
  * LINES
  ***************************************************/
         // This function returns an array of up to length 2 with points indicating at what points
-        // the given circle is intersrected by the given line
+        // the given circle is intersected by the given line
         ,lineIntersectsCircle : function(line, circle, isSegment){
             var b = line[0];
             var a = line[1];
