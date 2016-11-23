@@ -355,222 +355,6 @@ TwoCylinder.Engine.Appearance = TwoCylinder.Engine.Generic.extend({
     }
 });
 /*
-    This script defines a single generic object that can be inserted into the world
-*/
-
-TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
-    initialize:function(options){
-        this._super('initialize',options);
-        
-        // -------------------------------
-        this.__appearance = null;
-        
-        options = _.extend({
-            direction : 0 // float :: the instance's movement direction
-            ,speed : 0 // float :: the instance's absolute speed in it's direction
-            ,rotation : 0 // float :: the instance's this.__appearance rotation
-            ,rotation_lag : 20 // int :: the number of steps it will take to turnTowards a target direction
-        },options);
-        
-        if(options.appearance){
-            this.setAppearance(options.appearance);
-        }
-        
-        this._direction = options.direction;
-        this._rotationLag = options.rotation_lag;
-        this._speed = options.speed;
-        this._rotation = options.rotation;
-        this._collisionGroup = 'ENTITY';
-        
-        // -------------------------------
-        
-        // id is set by the world when it's inserted
-        this.__id = null;
-        this.__collisionGroupListening = {};
-        
-        this.__visible = true;           // boolean  :: is this instance visible
-    }
-    
-    // draw is called by a view.
-    // the view passes a callback function which is called IFF this instance is to be drawn
-    // passed to that function is important information that will be forwarded to the Instance's this.__appearance
-    ,draw : function(view, center_x, center_y){
-        this.getAppearance().draw(
-                view.getCanvas(), 
-                center_x, 
-                center_y, 
-                view.getRotation() * this._rotation, 
-                view.getScale(), 
-                this
-        );
-    }
-    ,preStep: function(worldClock){
-        return;
-    }
-    ,step : function(worldClock){
-        if(this._speed){
-            this.getBounding().setCenter({
-                x : this.getBounding().getCenter().x + this._speed * Math.cos(this.getDirection())
-                ,y : this.getBounding().getCenter().y + this._speed * Math.sin(this.getDirection())
-            });
-            
-            if(this.getAppearance()){
-                this.getAppearance().getBounding().setCenter(this.getBounding().getCenter());
-            }
-        }
-    }
-    ,postStep: function(worldClock){
-        return;
-    }
-/****************************************************************************
-COLLISIONS AND COLLISION CHECKING
-****************************************************************************/
-    
-    // this will return what collision group this entity belongs to
-    ,getCollisionGroup : function(){
-        return this._collisionGroup
-    }
-    
-    ,getCollidableGroups : function(){
-        return Object.keys(this.__collisionGroupListening);
-    }
-    
-    // this function passes an other instance and signifies a collision has occurred
-    // this instance then determines if it should react to the collision or not
-    ,handleCollidedWith : function(other){
-        var collisionFunction = this.objectIsCollidable(other);
-        if(collisionFunction){
-            collisionFunction.apply(this,[other]);
-        }
-    }
-    
-    ,groupIsCollidable : function(group){
-        retVal = false;
-        if(this.__collisionGroupListening[other]){
-            retVal = this.__collisionGroupListening[other];
-        }
-        return retVal;
-    }
-    
-    // this function will return the collision function for a passed Entity instance
-    // or false IFF there is no corresponding collision function
-    ,objectIsCollidable : function(other){
-        var retVal = false;
-        
-        if(other instanceof TwoCylinder.Engine.Entity){
-            _.each(this.__collisionGroupListening, function(collisionFunction,key){
-                if(other.getCollisionGroup() == key){
-                    retVal = collisionFunction;
-                    return false;
-                }
-            });
-        }
-        
-        return retVal;
-    }
-    
-    // this will return true IFF this object is listening for collisions
-    ,hasCollisionChecking : function(){
-        return !_.isEmpty(this.__collisionGroupListening);
-    }
-    
-    // ----------------------
-    
-    // this collision function handles collisions between this instance and instances of a specified Group
-    ,onCollideGroup : function(group, callback){
-        this.__collisionGroupListening[group] = callback;
-    }
-    
-    ,offCollideGroup : function(group){
-        delete this.__collisionGroupListening[group];
-    }
-    
-/****************************************************************************
- GETERS AND SETTERS
- ****************************************************************************/
-    
-    ,getPosition : function(){
-        return this.getBounding().getCenter();
-    }
-    
-    /**
-     * tuple can either be a boundingPoint, tuple (x & y) or just x (in which case y is y)
-     */
-    ,setPosition : function(tuple, y){
-        if(tuple instanceof TwoCylinder.Engine.BoundingPoint){
-            this.getBounding().updateBounding(tuple.getCenter());
-        }else if(typeof(tuple) == 'object'){
-            this.getBounding().updateBounding({x:tuple.x,y:tuple.y});
-        }else{
-            this.getBounding().updateBounding(tuple,y);
-        }
-    }
-    
-    // ----------------------
-    
-    /**
-     * app is an Appearance object
-     * when setting an this.__appearance object, you can also change the collision box by passing new collision dimensions
-     * "box" can either be a tuple (width & height) or just width in which case h is height
-     */
-    ,setAppearance : function(app, h){
-        this.__appearance = app;
-    }
-    
-    // This function defines how to draw this instance
-    ,getAppearance : function(){
-        return this.__appearance; 
-    }
-    
-    // ----------------------
-    
-    //TODO: I wonder if direction and speed should be represented with 1 object (vector)
-    ,getDirection : function(){
-        return this._direction;
-    }
-    
-    ,rotateTowards : function(dir){
-        var currentDirection = this.getDirection();
-        var TAU = ( 2 * Math.PI );
-        var directionDiff = (dir + TAU - currentDirection) % TAU;
-        if (directionDiff <= (Math.PI) ){
-            this.setDirection(currentDirection + (directionDiff / this._rotationLag));
-        }else{
-            this.setDirection(currentDirection - ( ( directionDiff - Math.PI ) / this._rotationLag));
-        }
-    }
-    ,setDirection : function(dir){
-        this._direction = dir;
-        
-        return this.getDirection();
-    }
-    
-    // ----------------------
-    
-    ,getVisible : function(){
-        return this.isVisible();
-    }
-    
-    ,isVisible : function(){
-        // must be in the world, visible, and with an appearance
-        return this.__id && this.__visible && !!this.__appearance;
-    }
-    
-    ,setVisible : function(vis){
-        this.__visible =  vis;
-    }
-    
-    // ----------------------
-    
-    ,getSpeed : function(){
-        return this._speed;
-    }
-    
-    ,setSpeed : function(speed){
-        this._speed = speed;
-    }
-});
-/*
     This script defines a game object
     This is an abstract class that ducktypes what a "game" must be able to do.
     
@@ -628,6 +412,13 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         this.__canvas.getContext('2d').clearRect(0,0,this.__canvas.width,this.__canvas.height);
     }
     ,draw : function(time){
+        var i;
+        var instances;
+        var inst;
+        var particles;
+        var part;
+        var ios;
+
         // before we draw, we want to re-center on our tracked instance if we have one
         if(this.__followInstance){
             this.getBounding().setCenterWithinBounding(
@@ -643,18 +434,21 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         this.__world.getBackground().draw(this);
         
         // get all instances and loop through them
-        var instances = this.__world.getInstances();
-        for(var i=0; i < instances.length; i++){
-            var inst = instances[i];
-            
+        instances = this.__world.getInstances();
+        for(i=0; i < instances.length; i++){
+            inst = instances[i];
+
             // skip invisible instances
             if(!inst.isVisible()){
                 continue;
             }
             
             // if this instance's appearance is inside this view box
+            // NOTE: we check the appearance's bounding because it may be desirable for the calculated collision box
+            // to be different from what is considered visible. for example, if the appearance draws shadows
+            // those shadows might not be collidable with other entities, but should be included in
+            // determining whether or not to draw the entity to a view.
             if( this.collides( inst.getAppearance().getBounding() ) ){
-                var that = this;
                 //then we draw the instance and pass the view so it can reference the view's
                 //transitions and transformation (rotation, scale, etc)
                 inst.draw(
@@ -664,10 +458,23 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
                 );
             }
         }
+
+        // Draw each particle emitter
+        particles = this.__world.getParticleEmitters();
+        for (i=0; i<particles.length; i++) {
+            part = particles[i];
+            if (this.collides(part.getBounding())) {
+                part.draw(
+                    this,
+                    part.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x,
+                    part.getBounding().getCenter().y - this.getBounding().getContainingRectangle().origin_y
+                )
+            }
+        }
         
         //now we loop through the IO handlers for this view
-        var ios = this.getIOs();
-        for(var i=0; i<ios.length; i++){
+        ios = this.getIOs();
+        for(i=0; i<ios.length; i++){
             ios[i].draw();
         }
     }
@@ -692,7 +499,7 @@ GETTER AND SETTER FUNCTIONS
     ,getScale : function(){
         return this._scale;
     }
-    ,setRotation : function(s){
+    ,setScale : function(s){
         this._scale = s;
     }
 /****************************************************************************
@@ -757,6 +564,7 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
         this._fps = options.fps || 30;
         
         this.__instances = [];
+        this.__particleEmitters = [];
         this.__collisionGroups = {};
         this.__views = [];
         this.__background = options.background || new TwoCylinder.Engine.Background();
@@ -781,8 +589,10 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     }
     
     ,__preStep : function(time){
+        var i;
+
         // we have each instance perform a frame step. 
-        for(var i=0; i<this.__instances.length; i++){
+        for(i=0; i<this.__instances.length; i++){
             if(this.__instances[i]){
                 this.__instances[i].preStep(time);
             }
@@ -790,37 +600,57 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     }
     
     ,__postStep : function(time){
-        // we have each instance perform a frame step. 
-        for(var i=0; i<this.__instances.length; i++){
+        var i;
+        var obj;
+
+            // we have each instance perform a frame step.
+        for(i=0; i<this.__instances.length; i++){
             if(this.__instances[i]){
-                var obj = this.__instances[i].postStep(time);
+                obj = this.__instances[i].postStep(time);
             }
         }
     }
     
     ,loop : function(){
         this.__preStep(++this.__clock);
-        
+        var i;
+        var j;
+        var k;
+        var part;
+        var me;
+        var other;
+        var obj;
+        var instanceCollisionGroups;
+        var group;
+
+        // we have each instance perform a frame step.
+        for(i=0; i<this.__particleEmitters.length; i++){
+            if(this.__particleEmitters[i]){
+                part = this.__particleEmitters[i];
+                part.step(this.__clock);
+            }
+        }
+
         // we have each instance perform a frame step. 
-        for(var i=0; i<this.__instances.length; i++){
+        for(i=0; i<this.__instances.length; i++){
             if(this.__instances[i]){
-                var obj = this.__instances[i];
+                obj = this.__instances[i];
                 obj.step(this.__clock);
             }
         }
-        
+
         // check for collisions
-        for(var i=0; i<this.__instances.length; i++){
+        for(i=0; i<this.__instances.length; i++){
             if(this.__instances[i].hasCollisionChecking()){
-                var me = this.__instances[i];
-                var instanceCollisionGroups = me.getCollidableGroups();
+                me = this.__instances[i];
+                instanceCollisionGroups = me.getCollidableGroups();
                 
                 // for each group, we want to search each of the elements in the world of that group
-                for(var j=0; j<instanceCollisionGroups.length; j++){
-                    var group = instanceCollisionGroups[j];
+                for(j=0; j<instanceCollisionGroups.length; j++){
+                    group = instanceCollisionGroups[j];
                     if(this.__collisionGroups[group] && this.__collisionGroups[group].length){
-                        for(var k=0; k<this.__collisionGroups[group].length; k++){
-                            var other = this.__collisionGroups[group][k];
+                        for(k=0; k<this.__collisionGroups[group].length; k++){
+                            other = this.__collisionGroups[group][k];
                             
                             // cannot collide with self
                             if( me.__id == other.__id ){
@@ -836,9 +666,9 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
                 }
             }
         }
-        
+
         // for every view attached to this world, we have them draw
-        for(var i=0; i<this.__views.length; i++){
+        for(i=0; i<this.__views.length; i++){
             if(this.__views[i]){
                 this.__views[i].draw(this.__clock);
             }
@@ -856,9 +686,10 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
  INSTANCE FUNCTIONS
  ****************************************************************************/    
     ,removeInstance : function(instance){
+        var i;
         if(instance.__id){
             this.__removeFromCollisionGroup(instance);
-            for(var i=0; i<this.__instances.length; i++){
+            for(i=0; i<this.__instances.length; i++){
                 if(this.__instances[i].__id == instance.__id){
                     this.__instances.splice(i,1);
                     break;
@@ -906,6 +737,29 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     }
     
 /****************************************************************************
+PARTICLE FUNCTIONS
+****************************************************************************/
+   ,addParticleEmitter : function(particle){
+       var that = this;
+       this.__particleEmitters.push(particle);
+       
+       if (particle.getLifetime() > 0) {
+           setTimeout(function(){
+               that.ParticleEmitter(particle);
+           },particle.getLifetime());
+       }
+       
+       return particle;
+   }
+   
+   ,removeParticleEmitter : function(particle){
+       // TODO?
+   }
+
+   ,getParticleEmitters : function() {
+        return this.__particleEmitters;
+    }
+/****************************************************************************
 BACKGROUND FUNCTIONS
 ****************************************************************************/
     ,setBackground : function(background){
@@ -920,14 +774,17 @@ HELPER FUNCTIONS
 ****************************************************************************/    
     ,__addToCollisionGroup : function(instance){
         var group = instance.getCollisionGroup();
+
         if(!this.__collisionGroups[group]){
             this.__collisionGroups[group] = [];
         }
         this.__collisionGroups[group].push(instance);
     }
     ,__removeFromCollisionGroup : function(instance){
+        var i;
         var group = instance.getCollisionGroup();
-        for(var i=0; i<this.__collisionGroups[group].length; i++){
+
+        for(i=0; i<this.__collisionGroups[group].length; i++){
             if(this.__collisionGroups[group][i].__id == instance.__id){
                 this.__collisionGroups[group].splice(i,1);
                 break;
@@ -1152,6 +1009,286 @@ TwoCylinder.Engine.BoundingPoint = TwoCylinder.Engine.Bounding.extend({
     }
 });
 
+/*
+    This script defines a single generic object that can be inserted into the world
+*/
+
+TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
+    initialize:function(options){
+        this._super('initialize',options);
+        
+        // -------------------------------
+        this.__appearance = null;
+        
+        options = _.extend({
+            direction : 0 // float :: the instance's movement direction
+            ,speed : 0 // float :: the instance's absolute speed in it's direction
+            ,rotation : 0 // float :: the instance's this.__appearance rotation
+            ,rotation_lag : 20 // int :: the number of steps it will take to turnTowards a target direction
+        },options);
+        
+        if(options.appearance){
+            this.setAppearance(options.appearance);
+        }
+        
+        this._direction = options.direction;
+        this._rotationLag = options.rotation_lag;
+        this._speed = options.speed;
+        this._rotation = options.rotation;
+        this._collisionGroup = 'ENTITY';
+        
+        // -------------------------------
+        
+        // id is set by the world when it's inserted
+        this.__id = null;
+        this.__collisionGroupListening = {};
+        
+        this.__visible = true;           // boolean  :: is this instance visible
+    }
+    
+    // draw is called by a view.
+    // the view passes a callback function which is called IFF this instance is to be drawn
+    // passed to that function is important information that will be forwarded to the Instance's this.__appearance
+    ,draw : function(view, center_x, center_y){
+        this.getAppearance().draw(
+                view.getCanvas(), 
+                center_x, 
+                center_y, 
+                view.getRotation() * this._rotation, 
+                view.getScale(), 
+                this
+        );
+    }
+    ,preStep: function(worldClock){
+        return;
+    }
+    ,step : function(worldClock){
+        if(this._speed){
+            this.getBounding().setCenter({
+                x : this.getBounding().getCenter().x + this._speed * Math.cos(this.getDirection())
+                ,y : this.getBounding().getCenter().y + this._speed * Math.sin(this.getDirection())
+            });
+            
+            if(this.getAppearance()){
+                this.getAppearance().getBounding().setCenter(this.getBounding().getCenter());
+            }
+        }
+    }
+    ,postStep: function(worldClock){
+        return;
+    }
+/****************************************************************************
+COLLISIONS AND COLLISION CHECKING
+****************************************************************************/
+    
+    // this will return what collision group this entity belongs to
+    ,getCollisionGroup : function(){
+        return this._collisionGroup
+    }
+    
+    ,getCollidableGroups : function(){
+        return Object.keys(this.__collisionGroupListening);
+    }
+    
+    // this function passes an other instance and signifies a collision has occurred
+    // this instance then determines if it should react to the collision or not
+    ,handleCollidedWith : function(other){
+        var collisionFunction = this.objectIsCollidable(other);
+        if(collisionFunction){
+            collisionFunction.apply(this,[other]);
+        }
+    }
+    
+    ,groupIsCollidable : function(group){
+        retVal = false;
+        if(this.__collisionGroupListening[other]){
+            retVal = this.__collisionGroupListening[other];
+        }
+        return retVal;
+    }
+    
+    // this function will return the collision function for a passed Entity instance
+    // or false IFF there is no corresponding collision function
+    ,objectIsCollidable : function(other){
+        var retVal = false;
+        
+        if(other instanceof TwoCylinder.Engine.Entity){
+            _.each(this.__collisionGroupListening, function(collisionFunction,key){
+                if(other.getCollisionGroup() == key){
+                    retVal = collisionFunction;
+                    return false;
+                }
+            });
+        }
+        
+        return retVal;
+    }
+    
+    // this will return true IFF this object is listening for collisions
+    ,hasCollisionChecking : function(){
+        return !_.isEmpty(this.__collisionGroupListening);
+    }
+    
+    // ----------------------
+    
+    // this collision function handles collisions between this instance and instances of a specified Group
+    ,onCollideGroup : function(group, callback){
+        this.__collisionGroupListening[group] = callback;
+    }
+    
+    ,offCollideGroup : function(group){
+        delete this.__collisionGroupListening[group];
+    }
+    
+/****************************************************************************
+ GETERS AND SETTERS
+ ****************************************************************************/
+    
+    ,getPosition : function(){
+        return this.getBounding().getCenter();
+    }
+    
+    /**
+     * tuple can either be a boundingPoint, tuple (x & y) or just x (in which case y is y)
+     */
+    ,setPosition : function(tuple, y){
+        if(tuple instanceof TwoCylinder.Engine.BoundingPoint){
+            this.getBounding().updateBounding(tuple.getCenter());
+        }else if(typeof(tuple) == 'object'){
+            this.getBounding().updateBounding({x:tuple.x,y:tuple.y});
+        }else{
+            this.getBounding().updateBounding(tuple,y);
+        }
+    }
+    
+    // ----------------------
+    
+    /**
+     * app is an Appearance object
+     * when setting an this.__appearance object, you can also change the collision box by passing new collision dimensions
+     * "box" can either be a tuple (width & height) or just width in which case h is height
+     */
+    ,setAppearance : function(app, h){
+        this.__appearance = app;
+    }
+    
+    // This function defines how to draw this instance
+    ,getAppearance : function(){
+        return this.__appearance; 
+    }
+    
+    // ----------------------
+    
+    //TODO: I wonder if direction and speed should be represented with 1 object (vector)
+    ,getDirection : function(){
+        return this._direction;
+    }
+    
+    ,rotateTowards : function(dir){
+        var currentDirection = this.getDirection();
+        var TAU = ( 2 * Math.PI );
+        var directionDiff = (dir + TAU - currentDirection) % TAU;
+        if (directionDiff <= (Math.PI) ){
+            this.setDirection(currentDirection + (directionDiff / this._rotationLag));
+        }else{
+            this.setDirection(currentDirection - ( ( directionDiff - Math.PI ) / this._rotationLag));
+        }
+    }
+    ,setDirection : function(dir){
+        this._direction = dir;
+        
+        return this.getDirection();
+    }
+    
+    // ----------------------
+    
+    ,getVisible : function(){
+        return this.isVisible();
+    }
+    
+    ,isVisible : function(){
+        // must be in the world, visible, and with an appearance
+        return this.__id && this.__visible && !!this.__appearance;
+    }
+    
+    ,setVisible : function(vis){
+        this.__visible =  vis;
+    }
+    
+    // ----------------------
+    
+    ,getSpeed : function(){
+        return this._speed;
+    }
+    
+    ,setSpeed : function(speed){
+        this._speed = speed;
+    }
+});
+/*
+    This script defines a single generic object that can be inserted into the world
+*/
+
+TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
+    initialize:function(options){
+        this._super('initialize',options);
+
+        options = _.extend({
+            particles : [],
+            lifetime : false
+        },options);
+
+        // -------------------------------
+        this.__particles = options.particles;
+        this.__lifetime = options.lifetime;
+    }
+    // an emitter drawing basically just calls draw on all its particles
+    // particles are like appearances, but without bounding boxes - they just get drawn if the emitter is in
+    // collision with the view
+    ,draw : function(view, center_x, center_y){
+        _.each(this.getParticles(), function(p){
+            p.draw(view.getCanvas(),
+                center_x,
+                center_y,
+                view.getRotation() * this._rotation,
+                view.getScale(),
+                this);
+        });
+    }
+    ,step : function(clock) {
+        _.each(this.getParticles(), function(p) {
+            p.step(clock);
+        });
+    }
+    ,getLifetime : function() {
+        return this.__lifetime;
+    }
+    ,destroy : function() {
+        var i;
+        for(i=0; i<this.__particles.length; i++) {
+            delete this.__particles[i];
+        }
+    }
+
+/****************************************************************************
+ PARTICLES
+ ****************************************************************************/
+    ,getParticles : function() {
+        return this.__particles;
+    }
+    ,removeParticle : function(particle) {
+        var i;
+        if(particle.__id){
+            for(i=0; i<this.__particles.length; i++){
+                if(this.__particles[i].__id == particle.__id){
+                    this.__particles.splice(i,1);
+                    break;
+                }
+            }
+        }
+        return particle;
+    }
+});
 TwoCylinder.IO.EVENT_TYPES = {};
 TwoCylinder.IO.EVENT_TYPES.TAP = 'tap';
 TwoCylinder.IO.EVENT_TYPES.DOUBLE = 'doubletap';
@@ -1195,7 +1332,7 @@ TwoCylinder.IO.Event = TwoCylinder.Engine.BoundingPoint.extend({
         
         this.timestamp = Date.now();
     }
-    ,linkEvent(evt){
+    ,linkEvent : function(evt){
         // we want them to only link events
         if(evt instanceof TwoCylinder.IO.Event){
             this.linked_event = evt; 
@@ -1251,7 +1388,7 @@ TwoCylinder.IO.Touch = TwoCylinder.Engine.Generic.extend({
             this.__boundToWorld = true
         }
         
-        // these events store the last events -- TODO : Maybe make them arrays? Store the trailinge events?
+        // these events store the last events -- TODO : Maybe make them arrays? Store the trailing events?
         this._lastUp = null;
         this._lastDown = null;
         this._lastMove = null;
@@ -1263,8 +1400,8 @@ TwoCylinder.IO.Touch = TwoCylinder.Engine.Generic.extend({
         });
         
         // id is set by the view when the touch object is inserted
-        this.__id;
-        
+        this.__id = null;
+
         // key is used to track touch listeners
         this.__key = 0;
         
@@ -1496,14 +1633,14 @@ TwoCylinder.IO.Touch = TwoCylinder.Engine.Generic.extend({
     /*
      * This function is used to bind a handler to a certain type of IO event
      */
-    ,__on(type,callback){
+    ,__on : function(type,callback){
         var array = this.__getListenersByType(type);
         array.push(this.__formatListener(callback));
     }
     /*
      * This function removes a passed binding
      */
-    ,__off(type,callback){
+    ,__off : function(type,callback){
         var array = this.__getListenersByType(type);
         for(var i=0; i<array.length; i++){
             if(array[i].callback === callback){

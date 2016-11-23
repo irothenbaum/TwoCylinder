@@ -16,11 +16,13 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
         
         this.__instances = [];
         this.__particleEmitters = [];
-        this.__collisionGroups = {};
         this.__views = [];
+        this.__collisionGroups = {};
         this.__background = options.background || new TwoCylinder.Engine.Background();
         
-        this.__key = 0;
+        this.__instanceKey = 0;
+        this.__viewKey = 0;
+        this.__emitterKey = 0;
         this.__clock = 0;
     }
     
@@ -152,7 +154,7 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     
     ,addInstance : function(instance){
         if(!instance.__id){
-            instance.__id = ++this.__key;
+            instance.__id = ++this.__instanceKey;
         }else{
             // should make sure it isn't already in the array
             this.removeInstance(instance);
@@ -173,6 +175,11 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
  VIEW FUNCTIONS
  ****************************************************************************/
     ,addView : function(view){
+        if (!view.__id){
+            view.__id = ++this.__viewKey;
+        } else {
+            this.removeView(view);
+        }
         view.setWorld(this);
         this.__views.push(view);
         
@@ -184,27 +191,42 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     }
     
     ,removeView : function(view){
-        // TODO?
+        var i;
+        if(view.__id){
+            for(i=0; i<this.__views.length; i++){
+                if(this.__views[i].__id == view.__id){
+                    this.__views.splice(i,1);
+                    break;
+                }
+            }
+        }
+        return view;
     }
     
 /****************************************************************************
 PARTICLE FUNCTIONS
 ****************************************************************************/
-   ,addParticleEmitter : function(particle){
-       var that = this;
-       this.__particleEmitters.push(particle);
-       
-       if (particle.getLifetime() > 0) {
-           setTimeout(function(){
-               that.ParticleEmitter(particle);
-           },particle.getLifetime());
-       }
-       
-       return particle;
+   ,addParticleEmitter : function(emitter){
+        if (!emitter.__id){
+            emitter.__id = ++this.__emitterKey;
+        } else {
+            this.removeParticleEmitter(emitter);
+        }
+        this.__particleEmitters.push(emitter);
+        return emitter;
    }
    
-   ,removeParticleEmitter : function(particle){
-       // TODO?
+   ,removeParticleEmitter : function(emitter){
+        var i;
+        if(emitter.__id){
+            for(i=0; i<this.__particleEmitters.length; i++){
+                if(this.__particleEmitters[i].__id == emitter.__id){
+                    this.__particleEmitters.splice(i,1);
+                    break;
+                }
+            }
+        }
+        return emitter;
    }
 
    ,getParticleEmitters : function() {

@@ -20,12 +20,22 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         this.__followInstance = false;
         
         this.__ios = [];
-        this.__key = 0;
+        this.__ioKey = 0;
+
+        // id is set by the world when it's inserted
+        this.__id = null;
     }
     ,clearCanvas : function(){
         this.__canvas.getContext('2d').clearRect(0,0,this.__canvas.width,this.__canvas.height);
     }
     ,draw : function(time){
+        var i;
+        var instances;
+        var inst;
+        var particles;
+        var part;
+        var ios;
+
         // before we draw, we want to re-center on our tracked instance if we have one
         if(this.__followInstance){
             this.getBounding().setCenterWithinBounding(
@@ -41,18 +51,21 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         this.__world.getBackground().draw(this);
         
         // get all instances and loop through them
-        var instances = this.__world.getInstances();
-        for(var i=0; i < instances.length; i++){
-            var inst = instances[i];
-            
+        instances = this.__world.getInstances();
+        for(i=0; i < instances.length; i++){
+            inst = instances[i];
+
             // skip invisible instances
             if(!inst.isVisible()){
                 continue;
             }
             
             // if this instance's appearance is inside this view box
+            // NOTE: we check the appearance's bounding because it may be desirable for the calculated collision box
+            // to be different from what is considered visible. for example, if the appearance draws shadows
+            // those shadows might not be collidable with other entities, but should be included in
+            // determining whether or not to draw the entity to a view.
             if( this.collides( inst.getAppearance().getBounding() ) ){
-                var that = this;
                 //then we draw the instance and pass the view so it can reference the view's
                 //transitions and transformation (rotation, scale, etc)
                 inst.draw(
@@ -62,10 +75,23 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
                 );
             }
         }
+
+        // Draw each particle emitter
+        particles = this.__world.getParticleEmitters();
+        for (i=0; i<particles.length; i++) {
+            part = particles[i];
+            if (this.collides(part.getBounding())) {
+                part.draw(
+                    this,
+                    part.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x,
+                    part.getBounding().getCenter().y - this.getBounding().getContainingRectangle().origin_y
+                )
+            }
+        }
         
         //now we loop through the IO handlers for this view
-        var ios = this.getIOs();
-        for(var i=0; i<ios.length; i++){
+        ios = this.getIOs();
+        for(i=0; i<ios.length; i++){
             ios[i].draw();
         }
     }
@@ -90,7 +116,7 @@ GETTER AND SETTER FUNCTIONS
     ,getScale : function(){
         return this._scale;
     }
-    ,setRotation : function(s){
+    ,setScale : function(s){
         this._scale = s;
     }
 /****************************************************************************
@@ -99,7 +125,7 @@ IO FUNCTIONS
     ,removeIO : function(io){
         if(io.__id){
             for(var i=0; i<this.__instances; i++){
-                if(this.__instances[i].__id == instance.__id){
+                if(this.__instances[i].__id == io.__id){
                     delete this.__instances[i];
                     break;
                 }
@@ -110,7 +136,7 @@ IO FUNCTIONS
     }
     ,addIO: function(io){
         if(!io.__id){
-            io.__id = ++this.__key;
+            io.__id = ++this.__ioKey;
         }else{
             // should make sure it isn't already in the array
             this.removeIO(io);

@@ -26,7 +26,7 @@ TwoCylinder.IO.Touch = TwoCylinder.Engine.Generic.extend({
             this.__boundToWorld = true
         }
         
-        // these events store the last events -- TODO : Maybe make them arrays? Store the trailinge events?
+        // these events store the last events -- TODO : Maybe make them arrays? Store the trailing events?
         this._lastUp = null;
         this._lastDown = null;
         this._lastMove = null;
@@ -38,8 +38,8 @@ TwoCylinder.IO.Touch = TwoCylinder.Engine.Generic.extend({
         });
         
         // id is set by the view when the touch object is inserted
-        this.__id;
-        
+        this.__id = null;
+
         // key is used to track touch listeners
         this.__key = 0;
         
@@ -271,14 +271,14 @@ TwoCylinder.IO.Touch = TwoCylinder.Engine.Generic.extend({
     /*
      * This function is used to bind a handler to a certain type of IO event
      */
-    ,__on(type,callback){
+    ,__on : function(type,callback){
         var array = this.__getListenersByType(type);
         array.push(this.__formatListener(callback));
     }
     /*
      * This function removes a passed binding
      */
-    ,__off(type,callback){
+    ,__off : function(type,callback){
         var array = this.__getListenersByType(type);
         for(var i=0; i<array.length; i++){
             if(array[i].callback === callback){

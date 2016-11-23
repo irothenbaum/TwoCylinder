@@ -13,23 +13,29 @@ module.exports = function(grunt) {
                     , "src/engine/geometry.js"
                     , "src/engine/generic.js"
                     , "src/engine/appearance.js"
-                    , "src/engine/entity.js"
                     , "src/engine/game.js"
                     , "src/engine/view.js"
                     , "src/engine/world.js"
                     , "src/engine/background.js"
-                    , "src/engine/bounding.js"
-                    , "src/engine/bounding_box.js"
-                    , "src/engine/bounding_circle.js"
-                    , "src/engine/bounding_point.js"
+
+                    // BOUNDING
+                    , "src/engine/bounding/bounding.js"
+                    , "src/engine/bounding/bounding_box.js"
+                    , "src/engine/bounding/bounding_circle.js"
+                    , "src/engine/bounding/bounding_point.js"
+
                     // ENTITIES
-                    
+                    , "src/engine/entity.js"
+                    , "src/engine/particle_emitter.js"
+                    , "src/sprites/particle.js"
+
+
                     // IO
                     , "src/io/event_types.js"
                     , "src/io/event.js"
                     , "src/io/touch.js"
                     , "src/io/joystick.js"
-                    
+
                     // SPRITES
                     , "src/sprites/joystick.js"
                 ]
