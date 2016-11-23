@@ -1,0 +1,47 @@
+<html>
+<head>
+
+    <!-- Load page styles -->
+    <link href="./css/index.css" rel="stylesheet">
+
+    <!-- Load TwoCylinder -->
+    <script type="text/javascript" src="./js/underscore-min.js"></script>
+    <script type="text/javascript" src="../../dist/twocylinder.js"></script>
+    
+    <!-- Load Game code -->
+    <script type="text/javascript" src="./js/main.js"></script>
+
+    <!-- Start the test -->
+    <script type="text/javascript">
+        function onLoad(){
+            window.game = new MyGame.Game();
+            game.start();
+
+            var colored = document.getElementById("colored");
+            var input = document.getElementById("colorInput");
+            input.onblur = function(){
+                colored.setAttribute("style", "background:#"+input.value+";");
+            };
+        }
+    </script>
+</head>
+
+<body onload="onLoad();">
+    <div id="controls">
+        <ul id="colors">
+            <li>
+                #<input type="text" id="colorInput" placeholder="Hex Value">
+            </li>
+        </ul>
+        <ul id="particles">
+            <li onclick="createEmitter('fire');">Fire</li>
+            <li onclick="createEmitter('smoke');">Smoke</li>
+            <li onclick="createEmitter('explosion');">Explosion</li>
+            <li onclick="createEmitter('sparks');">Sparks</li>
+        </ul>
+    </div>
+    <canvas id="black"></canvas>
+    <canvas id="colored"></canvas>
+    <canvas id="white"></canvas>
+</body>
+</html>

@@ -1,0 +1,23 @@
+body{
+    width:100%;
+    height:100%;
+    margin:0;
+}
+
+canvas{
+    height:100%;
+    width:30%;
+    float:left;
+}
+
+#black{ background:black; }
+#white { background: white; }
+#colored { background: #777; }
+
+
+#controls {
+    background:#e4e4e4;
+    width:10%;
+    height:100%;
+    float:left;
+}
