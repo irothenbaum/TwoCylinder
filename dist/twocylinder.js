@@ -293,17 +293,30 @@ TwoCylinder.Engine.Geometry = (function(){
             var radians = Math.atan2(point2.y - point1.y, point2.x - point1.x);
             return inDegrees ? ( radians * 180 / Math.PI ) : radians;
         }
-        ,pointToPoint : function(point1, point2, inDegrees){
-            return {
-                distance : Geometry.distanceToPoint(point1,point2,inDegrees)
-                ,angle : Geometry.angleToPoint(point1,point2,inDegrees)
+        /**
+         * @param {{x:*. y:*}} point1
+         * @param {{x:*. y:*}} point2
+         * @returns {Vector}
+         */
+        ,pointToPoint : function(point1, point2){
+            return new TwoCylinder.Engine.Vector({
+                speed : Geometry.distanceToPoint(point1,point2),
+                direction : Geometry.angleToPoint(point1,point2)
+            });
+        }
+        /**
+         * @param {{x:*,y:*}} point1
+         * @param {Vector} vector
+         * @returns {{x: *, y: *}}
+         */
+        ,pointFromVector : function(point1, vector){
+            return{
+                x : point1.x + Math.cos(vector.getDirection()) * vector.getSpeed(),
+                y : point1.y + Math.sin(vector.getDirection()) * vector.getSpeed()
             };
         }
-        ,pointFromAngle : function(point1, angle, distance, inDegrees){
-            return{
-                x : point1.x + Math.cos(angle) * distance,
-                y : point1.y + Math.sin(angle) * distance
-            };
+        ,getRandomDirection : function(inDegrees) {
+            return Math.random() * 2 * Math.PI;
         }
     };
     
@@ -406,7 +419,10 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         this.__followInstance = false;
         
         this.__ios = [];
-        this.__key = 0;
+        this.__ioKey = 0;
+
+        // id is set by the world when it's inserted
+        this.__id = null;
     }
     ,clearCanvas : function(){
         this.__canvas.getContext('2d').clearRect(0,0,this.__canvas.width,this.__canvas.height);
@@ -508,7 +524,7 @@ IO FUNCTIONS
     ,removeIO : function(io){
         if(io.__id){
             for(var i=0; i<this.__instances; i++){
-                if(this.__instances[i].__id == instance.__id){
+                if(this.__instances[i].__id == io.__id){
                     delete this.__instances[i];
                     break;
                 }
@@ -519,7 +535,7 @@ IO FUNCTIONS
     }
     ,addIO: function(io){
         if(!io.__id){
-            io.__id = ++this.__key;
+            io.__id = ++this.__ioKey;
         }else{
             // should make sure it isn't already in the array
             this.removeIO(io);
@@ -565,11 +581,13 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
         
         this.__instances = [];
         this.__particleEmitters = [];
-        this.__collisionGroups = {};
         this.__views = [];
+        this.__collisionGroups = {};
         this.__background = options.background || new TwoCylinder.Engine.Background();
         
-        this.__key = 0;
+        this.__instanceKey = 0;
+        this.__viewKey = 0;
+        this.__emitterKey = 0;
         this.__clock = 0;
     }
     
@@ -701,7 +719,7 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     
     ,addInstance : function(instance){
         if(!instance.__id){
-            instance.__id = ++this.__key;
+            instance.__id = ++this.__instanceKey;
         }else{
             // should make sure it isn't already in the array
             this.removeInstance(instance);
@@ -722,6 +740,11 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
  VIEW FUNCTIONS
  ****************************************************************************/
     ,addView : function(view){
+        if (!view.__id){
+            view.__id = ++this.__viewKey;
+        } else {
+            this.removeView(view);
+        }
         view.setWorld(this);
         this.__views.push(view);
         
@@ -733,27 +756,42 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     }
     
     ,removeView : function(view){
-        // TODO?
+        var i;
+        if(view.__id){
+            for(i=0; i<this.__views.length; i++){
+                if(this.__views[i].__id == view.__id){
+                    this.__views.splice(i,1);
+                    break;
+                }
+            }
+        }
+        return view;
     }
     
 /****************************************************************************
 PARTICLE FUNCTIONS
 ****************************************************************************/
-   ,addParticleEmitter : function(particle){
-       var that = this;
-       this.__particleEmitters.push(particle);
-       
-       if (particle.getLifetime() > 0) {
-           setTimeout(function(){
-               that.ParticleEmitter(particle);
-           },particle.getLifetime());
-       }
-       
-       return particle;
+   ,addParticleEmitter : function(emitter){
+        if (!emitter.__id){
+            emitter.__id = ++this.__emitterKey;
+        } else {
+            this.removeParticleEmitter(emitter);
+        }
+        this.__particleEmitters.push(emitter);
+        return emitter;
    }
    
-   ,removeParticleEmitter : function(particle){
-       // TODO?
+   ,removeParticleEmitter : function(emitter){
+        var i;
+        if(emitter.__id){
+            for(i=0; i<this.__particleEmitters.length; i++){
+                if(this.__particleEmitters[i].__id == emitter.__id){
+                    this.__particleEmitters.splice(i,1);
+                    break;
+                }
+            }
+        }
+        return emitter;
    }
 
    ,getParticleEmitters : function() {
@@ -813,6 +851,52 @@ TwoCylinder.Engine.Background = TwoCylinder.Engine.Root.extend({
         context.fillRect(0,0,containingRectangle.width,containingRectangle.height);
         context.fill();
         context.stroke();
+    }
+});
+
+/*
+ This script defines the Vector object
+ */
+
+TwoCylinder.Engine.Vector = TwoCylinder.Engine.Root.extend({
+    initialize : function(options) {
+        options = _.extend({
+            direction : 0,
+            speed : 0
+        },options);
+
+        this.__direction = options.direction;
+        this.__speed = options.speed;
+    }
+// ------------------------------------
+// GETTERS / SETTERS
+// ------------------------------------
+    ,getDirection : function(){
+        return this.__direction;
+    }
+    ,getSpeed : function(){
+        return this.__speed;
+    }
+    ,setDirection : function(dir){
+        this.__direction = dir;
+    }
+    ,setSpeed : function (speed) {
+        this.__speed = speed;
+    }
+// ------------------------------------
+// CONVENIENCE FUNCTIONS
+// ------------------------------------
+    ,rotateTowards : function(dir, friction){
+        var currentDirection = this.getDirection();
+        var TAU = ( 2 * Math.PI );
+        var directionDiff = (dir + TAU - currentDirection) % TAU;
+
+        friction = friction ? friction : 1;
+        if (directionDiff <= (Math.PI) ){
+            this.setDirection(currentDirection + (directionDiff / friction));
+        }else{
+            this.setDirection(currentDirection - ( ( directionDiff - Math.PI ) / friction));
+        }
     }
 });
 
@@ -1021,8 +1105,7 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
         this.__appearance = null;
         
         options = _.extend({
-            direction : 0 // float :: the instance's movement direction
-            ,speed : 0 // float :: the instance's absolute speed in it's direction
+            velocity : null // Vector :: the instance's velocity vector
             ,rotation : 0 // float :: the instance's this.__appearance rotation
             ,rotation_lag : 20 // int :: the number of steps it will take to turnTowards a target direction
         },options);
@@ -1031,9 +1114,8 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
             this.setAppearance(options.appearance);
         }
         
-        this._direction = options.direction;
+        this._velocity = options.velocity;
         this._rotationLag = options.rotation_lag;
-        this._speed = options.speed;
         this._rotation = options.rotation;
         this._collisionGroup = 'ENTITY';
         
@@ -1063,10 +1145,10 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
         return;
     }
     ,step : function(worldClock){
-        if(this._speed){
+        if(this.getSpeed()){
             this.getBounding().setCenter({
-                x : this.getBounding().getCenter().x + this._speed * Math.cos(this.getDirection())
-                ,y : this.getBounding().getCenter().y + this._speed * Math.sin(this.getDirection())
+                x : this.getBounding().getCenter().x + this.getSpeed() * Math.cos(this.getDirection())
+                ,y : this.getBounding().getCenter().y + this.getSpeed() * Math.sin(this.getDirection())
             });
             
             if(this.getAppearance()){
@@ -1179,25 +1261,34 @@ COLLISIONS AND COLLISION CHECKING
     
     // ----------------------
     
-    //TODO: I wonder if direction and speed should be represented with 1 object (vector)
     ,getDirection : function(){
-        return this._direction;
+        return this.getVelocity().getDirection();
     }
-    
     ,rotateTowards : function(dir){
-        var currentDirection = this.getDirection();
-        var TAU = ( 2 * Math.PI );
-        var directionDiff = (dir + TAU - currentDirection) % TAU;
-        if (directionDiff <= (Math.PI) ){
-            this.setDirection(currentDirection + (directionDiff / this._rotationLag));
-        }else{
-            this.setDirection(currentDirection - ( ( directionDiff - Math.PI ) / this._rotationLag));
-        }
+        this.getVelocity().rotateTowards(dir, this._rotationLag);
     }
     ,setDirection : function(dir){
-        this._direction = dir;
+        this.getVelocity().setDirection(dir);
         
         return this.getDirection();
+    }
+
+    ,getSpeed : function(){
+        return this.getVelocity().getSpeed();
+    }
+
+    ,setSpeed : function(speed){
+        this.getVelocity().setSpeed(speed);
+    }
+
+    ,setVelocity : function(velocity) {
+        this._velocity = velocity;
+    }
+    ,getVelocity : function() {
+        if (!this._velocity) {
+            this._velocity = new TwoCylinder.Engine.Vector();
+        }
+        return this._velocity;
     }
     
     // ----------------------
@@ -1214,16 +1305,6 @@ COLLISIONS AND COLLISION CHECKING
     ,setVisible : function(vis){
         this.__visible =  vis;
     }
-    
-    // ----------------------
-    
-    ,getSpeed : function(){
-        return this._speed;
-    }
-    
-    ,setSpeed : function(speed){
-        this._speed = speed;
-    }
 });
 /*
     This script defines a single generic object that can be inserted into the world
@@ -1233,14 +1314,17 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
     initialize:function(options){
         this._super('initialize',options);
 
-        options = _.extend({
-            particles : [],
-            lifetime : false
-        },options);
-
         // -------------------------------
-        this.__particles = options.particles;
-        this.__lifetime = options.lifetime;
+        this.__particles = [];
+
+        // by default, newly created emitters do not emit until told to
+        this.__isEmitting = false;
+
+        // an internal id counter
+        this.__particleKey = 0;
+
+        // id is set by the world when it's inserted
+        this.__id = null;
     }
     // an emitter drawing basically just calls draw on all its particles
     // particles are like appearances, but without bounding boxes - they just get drawn if the emitter is in
@@ -1260,14 +1344,14 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
             p.step(clock);
         });
     }
-    ,getLifetime : function() {
-        return this.__lifetime;
-    }
     ,destroy : function() {
-        var i;
-        for(i=0; i<this.__particles.length; i++) {
-            delete this.__particles[i];
-        }
+        this.__particles = [];
+    }
+    ,setIsEmitting: function(isEmitting) {
+        this.__isEmitting = isEmitting;
+    }
+    ,getIsEmitting: function() {
+        return this.__isEmitting;
     }
 
 /****************************************************************************
@@ -1287,6 +1371,24 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
             }
         }
         return particle;
+    }
+    /**
+     * It may be advantageous for particle emitters to emit particles one at a time
+     * rather than repeatedly. In that case, this function can be used
+     * @param {function} particleType
+     */
+    ,emitParticle: function(particleType, options) {
+        var newParticle;
+        var defaultOptions = {
+            id : ++this.__particleKey,
+            emitter : this
+        };
+
+        options = options ? _.extend(options,defaultOptions) : defaultOptions;
+        newParticle = new particleType(options);
+        this.particles.push(newParticle);
+
+        return newParticle;
     }
 });
 TwoCylinder.IO.EVENT_TYPES = {};
@@ -1336,9 +1438,7 @@ TwoCylinder.IO.Event = TwoCylinder.Engine.BoundingPoint.extend({
         // we want them to only link events
         if(evt instanceof TwoCylinder.IO.Event){
             this.linked_event = evt; 
-            
-            this.angle = TwoCylinder.Engine.Geometry.angleToPoint(this.linked_event, this);
-            this.speed = TwoCylinder.Engine.Geometry.distanceToPoint(this.linked_event, this);
+            this.velocity = TwoCylinder.Engine.Geometry.pointToPoint(this.linked_event, this);
         }
         
         return this;
@@ -1739,7 +1839,9 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
             });
             
             if(typeof(that.__operateFunction) == 'function'){
-                evt.speed = 0;
+                if (evt.velocity) {
+                    evt.velocity.setSpeed(0);
+                }
                 that.__operateFunction(evt);
             }
         });
@@ -1751,7 +1853,9 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
             delete that._previousEvent;
             
             if(typeof(that.__operateFunction) == 'function'){
-                evt.speed = 0;
+                if (evt.velocity) {
+                    evt.velocity.setSpeed(0);
+                }
                 that.__operateFunction(evt);
             }
         });
@@ -1760,8 +1864,10 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
             if(that.isDown()){
                 evt.linkEvent(that.__lastDown);
                 if(typeof(that.__operateFunction) == 'function'){
-                    //want to make the max speed the distance we allow the joystick to move 
-                    evt.speed = Math.min(evt.speed, that._defaultRadius / that.__pullRatio);
+                    //want to make the max speed the distance we allow the joystick to move
+                    if (evt.velocity) {
+                        evt.velocity.setSpeed(Math.min(evt.velocity.getSpeed(), that._defaultRadius / that.__pullRatio));
+                    }
                     that.__operateFunction(evt);
                 }
                 that._previousEvent = evt;
@@ -1778,11 +1884,12 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
         var options = {
             stick : this.getBounding().getCenter()
             ,operating : this.isDown()
-        }
+        };
         
-        if(this._previousEvent){
-            var radius = Math.min(this._defaultRadius / this.__pullRatio, this._previousEvent.speed);
-            options.stick = TwoCylinder.Engine.Geometry.pointFromAngle(options.stick, this._previousEvent.angle, radius);
+        if(this._previousEvent && this._previousEvent.velocity){
+            var vector = _.clone(this._previousEvent.velocity);
+            vector.setSpeed(Math.min(this._defaultRadius / this.__pullRatio, this._previousEvent.velocity.getSpeed()));
+            options.stick = TwoCylinder.Engine.Geometry.pointFromVector(options.stick, vector);
         }
         
         return options;

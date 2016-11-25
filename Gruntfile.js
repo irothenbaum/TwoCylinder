@@ -17,6 +17,7 @@ module.exports = function(grunt) {
                     , "src/engine/view.js"
                     , "src/engine/world.js"
                     , "src/engine/background.js"
+                    , "src/engine/vector.js"
 
                     // BOUNDING
                     , "src/engine/bounding/bounding.js"

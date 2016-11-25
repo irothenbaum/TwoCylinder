@@ -6,22 +6,13 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
     initialize:function(options){
         this._super('initialize',options);
 
-        options = _.extend({
-            particleType : null,
-            lifetime : false
-        },options);
-
         // -------------------------------
-        this.__particleReference = options.particleType;
-        this.__lifetime = options.lifetime;
         this.__particles = [];
 
         // by default, newly created emitters do not emit until told to
         this.__isEmitting = false;
 
-        // canEmit is an internal semaphore that helps control when to emit another particle
-        this._canEmit = false;
-
+        // an internal id counter
         this.__particleKey = 0;
 
         // id is set by the world when it's inserted
@@ -44,14 +35,6 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
         _.each(this.getParticles(), function(p) {
             p.step(clock);
         });
-
-        if (this._canEmit) {
-            this.emitNewParticle();
-            this._canEmit = false;
-        }
-    }
-    ,getLifetime : function() {
-        return this.__lifetime;
     }
     ,destroy : function() {
         this.__particles = [];
@@ -81,17 +64,22 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
         }
         return particle;
     }
-    ,emitNewParticle : function(options) {
+    /**
+     * It may be advantageous for particle emitters to emit particles one at a time
+     * rather than repeatedly. In that case, this function can be used
+     * @param {function} particleType
+     */
+    ,emitParticle: function(particleType, options) {
         var newParticle;
-        if (typeof this.__particleReference == 'function') {
-            options = _.extend(options,{
-                id : ++this.__particleKey,
-                emitter : this
-            });
-            newParticle = new this.__particleReference(options);
-        } else {
-            newParticle = null;
-        }
+        var defaultOptions = {
+            id : ++this.__particleKey,
+            emitter : this
+        };
+
+        options = options ? _.extend(options,defaultOptions) : defaultOptions;
+        newParticle = new particleType(options);
+        this.particles.push(newParticle);
+
         return newParticle;
     }
 });

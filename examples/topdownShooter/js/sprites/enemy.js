@@ -15,8 +15,8 @@ MyGame.Sprites.Enemy = TwoCylinder.Engine.Appearance.extend({
     }
 
     //drawFunctions should assume the context of the canvas drawing them
-    ,drawFunction : function(x,y,rotation,scale,entity){
-        var context = this.getContext('2d');
+    ,draw : function(canvas, x,y,rotation,scale,entity){
+        var context = canvas.getContext('2d');
         context.beginPath();
         context.arc(x, y, 20, 0, 2 * Math.PI, false);
         context.fillStyle = 'orange';

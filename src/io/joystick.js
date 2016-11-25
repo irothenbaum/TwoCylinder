@@ -36,7 +36,9 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
             });
             
             if(typeof(that.__operateFunction) == 'function'){
-                evt.speed = 0;
+                if (evt.velocity) {
+                    evt.velocity.setSpeed(0);
+                }
                 that.__operateFunction(evt);
             }
         });
@@ -48,7 +50,9 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
             delete that._previousEvent;
             
             if(typeof(that.__operateFunction) == 'function'){
-                evt.speed = 0;
+                if (evt.velocity) {
+                    evt.velocity.setSpeed(0);
+                }
                 that.__operateFunction(evt);
             }
         });
@@ -57,8 +61,10 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
             if(that.isDown()){
                 evt.linkEvent(that.__lastDown);
                 if(typeof(that.__operateFunction) == 'function'){
-                    //want to make the max speed the distance we allow the joystick to move 
-                    evt.speed = Math.min(evt.speed, that._defaultRadius / that.__pullRatio);
+                    //want to make the max speed the distance we allow the joystick to move
+                    if (evt.velocity) {
+                        evt.velocity.setSpeed(Math.min(evt.velocity.getSpeed(), that._defaultRadius / that.__pullRatio));
+                    }
                     that.__operateFunction(evt);
                 }
                 that._previousEvent = evt;
@@ -75,11 +81,12 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
         var options = {
             stick : this.getBounding().getCenter()
             ,operating : this.isDown()
-        }
+        };
         
-        if(this._previousEvent){
-            var radius = Math.min(this._defaultRadius / this.__pullRatio, this._previousEvent.speed);
-            options.stick = TwoCylinder.Engine.Geometry.pointFromAngle(options.stick, this._previousEvent.angle, radius);
+        if(this._previousEvent && this._previousEvent.velocity){
+            var vector = _.clone(this._previousEvent.velocity);
+            vector.setSpeed(Math.min(this._defaultRadius / this.__pullRatio, this._previousEvent.velocity.getSpeed()));
+            options.stick = TwoCylinder.Engine.Geometry.pointFromVector(options.stick, vector);
         }
         
         return options;

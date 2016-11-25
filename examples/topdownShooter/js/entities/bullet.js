@@ -10,8 +10,12 @@ MyGame.Entities.Bullet = TwoCylinder.Engine.Entity.extend({
                 ,radius : 5
             })
             ,appearance :  new MyGame.Sprites.Bullet(options)
-            ,speed : 30
+            ,direction : 0
         }, options);
+        options.velocity = new TwoCylinder.Engine.Vector({
+            direction : options.direction,
+            speed : 30
+        });
         this._super('initialize',options);
         
         this._collisionGroup = 'PLAYER_BULLET';

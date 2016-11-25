@@ -37,9 +37,7 @@ TwoCylinder.IO.Event = TwoCylinder.Engine.BoundingPoint.extend({
         // we want them to only link events
         if(evt instanceof TwoCylinder.IO.Event){
             this.linked_event = evt; 
-            
-            this.angle = TwoCylinder.Engine.Geometry.angleToPoint(this.linked_event, this);
-            this.speed = TwoCylinder.Engine.Geometry.distanceToPoint(this.linked_event, this);
+            this.velocity = TwoCylinder.Engine.Geometry.pointToPoint(this.linked_event, this);
         }
         
         return this;

@@ -220,17 +220,30 @@ TwoCylinder.Engine.Geometry = (function(){
             var radians = Math.atan2(point2.y - point1.y, point2.x - point1.x);
             return inDegrees ? ( radians * 180 / Math.PI ) : radians;
         }
-        ,pointToPoint : function(point1, point2, inDegrees){
-            return {
-                distance : Geometry.distanceToPoint(point1,point2,inDegrees)
-                ,angle : Geometry.angleToPoint(point1,point2,inDegrees)
+        /**
+         * @param {{x:*. y:*}} point1
+         * @param {{x:*. y:*}} point2
+         * @returns {Vector}
+         */
+        ,pointToPoint : function(point1, point2){
+            return new TwoCylinder.Engine.Vector({
+                speed : Geometry.distanceToPoint(point1,point2),
+                direction : Geometry.angleToPoint(point1,point2)
+            });
+        }
+        /**
+         * @param {{x:*,y:*}} point1
+         * @param {Vector} vector
+         * @returns {{x: *, y: *}}
+         */
+        ,pointFromVector : function(point1, vector){
+            return{
+                x : point1.x + Math.cos(vector.getDirection()) * vector.getSpeed(),
+                y : point1.y + Math.sin(vector.getDirection()) * vector.getSpeed()
             };
         }
-        ,pointFromAngle : function(point1, angle, distance, inDegrees){
-            return{
-                x : point1.x + Math.cos(angle) * distance,
-                y : point1.y + Math.sin(angle) * distance
-            };
+        ,getRandomDirection : function(inDegrees) {
+            return Math.random() * 2 * Math.PI;
         }
     };
     

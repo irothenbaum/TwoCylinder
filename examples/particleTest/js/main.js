@@ -20,6 +20,7 @@ MyGame.Game = TwoCylinder.Engine.Game.extend({
         this.world.removeParticleEmitter(this.__emitter);
     }
     ,createEmitter: function(name) {
+        this.clearEmitters();
         switch (name) {
             case "explosion":
                 this.__emitter = new MyGame.Emitters.Explosion();

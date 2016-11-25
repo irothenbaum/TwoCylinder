@@ -10,8 +10,7 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
         this.__appearance = null;
         
         options = _.extend({
-            direction : 0 // float :: the instance's movement direction
-            ,speed : 0 // float :: the instance's absolute speed in it's direction
+            velocity : null // Vector :: the instance's velocity vector
             ,rotation : 0 // float :: the instance's this.__appearance rotation
             ,rotation_lag : 20 // int :: the number of steps it will take to turnTowards a target direction
         },options);
@@ -20,9 +19,8 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
             this.setAppearance(options.appearance);
         }
         
-        this._direction = options.direction;
+        this._velocity = options.velocity;
         this._rotationLag = options.rotation_lag;
-        this._speed = options.speed;
         this._rotation = options.rotation;
         this._collisionGroup = 'ENTITY';
         
@@ -52,10 +50,10 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
         return;
     }
     ,step : function(worldClock){
-        if(this._speed){
+        if(this.getSpeed()){
             this.getBounding().setCenter({
-                x : this.getBounding().getCenter().x + this._speed * Math.cos(this.getDirection())
-                ,y : this.getBounding().getCenter().y + this._speed * Math.sin(this.getDirection())
+                x : this.getBounding().getCenter().x + this.getSpeed() * Math.cos(this.getDirection())
+                ,y : this.getBounding().getCenter().y + this.getSpeed() * Math.sin(this.getDirection())
             });
             
             if(this.getAppearance()){
@@ -168,25 +166,34 @@ COLLISIONS AND COLLISION CHECKING
     
     // ----------------------
     
-    //TODO: I wonder if direction and speed should be represented with 1 object (vector)
     ,getDirection : function(){
-        return this._direction;
+        return this.getVelocity().getDirection();
     }
-    
     ,rotateTowards : function(dir){
-        var currentDirection = this.getDirection();
-        var TAU = ( 2 * Math.PI );
-        var directionDiff = (dir + TAU - currentDirection) % TAU;
-        if (directionDiff <= (Math.PI) ){
-            this.setDirection(currentDirection + (directionDiff / this._rotationLag));
-        }else{
-            this.setDirection(currentDirection - ( ( directionDiff - Math.PI ) / this._rotationLag));
-        }
+        this.getVelocity().rotateTowards(dir, this._rotationLag);
     }
     ,setDirection : function(dir){
-        this._direction = dir;
+        this.getVelocity().setDirection(dir);
         
         return this.getDirection();
+    }
+
+    ,getSpeed : function(){
+        return this.getVelocity().getSpeed();
+    }
+
+    ,setSpeed : function(speed){
+        this.getVelocity().setSpeed(speed);
+    }
+
+    ,setVelocity : function(velocity) {
+        this._velocity = velocity;
+    }
+    ,getVelocity : function() {
+        if (!this._velocity) {
+            this._velocity = new TwoCylinder.Engine.Vector();
+        }
+        return this._velocity;
     }
     
     // ----------------------
@@ -202,15 +209,5 @@ COLLISIONS AND COLLISION CHECKING
     
     ,setVisible : function(vis){
         this.__visible =  vis;
-    }
-    
-    // ----------------------
-    
-    ,getSpeed : function(){
-        return this._speed;
-    }
-    
-    ,setSpeed : function(speed){
-        this._speed = speed;
     }
 });

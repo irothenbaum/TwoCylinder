@@ -55,8 +55,9 @@ MyGame.Game = TwoCylinder.Engine.Game.extend({
         });
         
         this.joystickMove.onOperate(function(event){
-            that.player.setDirection(event.angle);
-            that.player.setSpeed(event.speed/3);
+            var velocity = _.clone(event.velocity);
+            velocity.setSpeed(velocity.getSpeed()/3);
+            that.player.setVelocity(velocity);
         });
         
         // create the Shoot stick
@@ -67,24 +68,13 @@ MyGame.Game = TwoCylinder.Engine.Game.extend({
         });
         
         this.joystickShoot.onOperate(function(event){
-            if(event.speed < 10) {
+            if(event.velocity.getSpeed() < 10) {
                 that.player.setShooting(false);
                 return;
             }else if(!that.player.isShooting()){
                 that.player.setShooting(true);
             }
-            
-            switch(event.getType()){
-                case TwoCylinder.IO.EVENT_TYPES.DOWN:
-                    that.player.setShooting(true);
-                    break;
-                case TwoCylinder.IO.EVENT_TYPES.UP:
-                    that.player.setShooting(false);
-                    break;
-                default:
-                    that.player.setShootingDirection(event.angle)
-                    break;
-            }
+            that.player.setShootingDirection(event.velocity.getDirection());
         });
         
         
