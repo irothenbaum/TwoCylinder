@@ -28,7 +28,7 @@ module.exports = function(grunt) {
                     // ENTITIES
                     , "src/engine/entity.js"
                     , "src/engine/particle_emitter.js"
-                    , "src/sprites/particle.js"
+                    , "src/engine/particle.js"
 
 
                     // IO

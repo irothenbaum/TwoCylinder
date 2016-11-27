@@ -6,7 +6,7 @@
 TwoCylinder.Engine.Background = TwoCylinder.Engine.Root.extend({
     initialize : function(options){
         options = _.extend({
-            color : '#ffffff'
+            color : 'transparent'
         },options);
         this._color = options.color;
     }

@@ -8,6 +8,7 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
 
         // -------------------------------
         this.__particles = [];
+        this.__toRemove = [];
 
         // by default, newly created emitters do not emit until told to
         this.__isEmitting = false;
@@ -35,6 +36,11 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
         _.each(this.getParticles(), function(p) {
             p.step(clock);
         });
+
+        _.each(this.__toRemove, function(p){
+            this.__removeParticle(p);
+        });
+        this.__toRemove = [];
     }
     ,destroy : function() {
         this.__particles = [];
@@ -53,6 +59,10 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
         return this.__particles;
     }
     ,removeParticle : function(particle) {
+        this.__toRemove.push(particle);
+    }
+
+    ,__removeParticle : function(particle) {
         var i;
         if(particle.__id){
             for(i=0; i<this.__particles.length; i++){
@@ -78,7 +88,7 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
 
         options = options ? _.extend(options,defaultOptions) : defaultOptions;
         newParticle = new particleType(options);
-        this.particles.push(newParticle);
+        this.__particles.push(newParticle);
 
         return newParticle;
     }

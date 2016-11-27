@@ -237,7 +237,7 @@ TwoCylinder.Engine.Geometry = (function(){
          * @returns {{x: *, y: *}}
          */
         ,pointFromVector : function(point1, vector){
-            return{
+            return {
                 x : point1.x + Math.cos(vector.getDirection()) * vector.getSpeed(),
                 y : point1.y + Math.sin(vector.getDirection()) * vector.getSpeed()
             };

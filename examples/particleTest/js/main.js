@@ -17,6 +17,9 @@ MyGame.Game = TwoCylinder.Engine.Game.extend({
         this.createViews();
     }
     ,clearEmitters:  function() {
+        if (!this.__emitter) {
+            return;
+        }
         this.world.removeParticleEmitter(this.__emitter);
     }
     ,createEmitter: function(name) {

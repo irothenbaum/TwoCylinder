@@ -310,7 +310,7 @@ TwoCylinder.Engine.Geometry = (function(){
          * @returns {{x: *, y: *}}
          */
         ,pointFromVector : function(point1, vector){
-            return{
+            return {
                 x : point1.x + Math.cos(vector.getDirection()) * vector.getSpeed(),
                 y : point1.y + Math.sin(vector.getDirection()) * vector.getSpeed()
             };
@@ -838,7 +838,7 @@ HELPER FUNCTIONS
 TwoCylinder.Engine.Background = TwoCylinder.Engine.Root.extend({
     initialize : function(options){
         options = _.extend({
-            color : '#ffffff'
+            color : 'transparent'
         },options);
         this._color = options.color;
     }
@@ -1316,6 +1316,7 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
 
         // -------------------------------
         this.__particles = [];
+        this.__toRemove = [];
 
         // by default, newly created emitters do not emit until told to
         this.__isEmitting = false;
@@ -1343,6 +1344,11 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
         _.each(this.getParticles(), function(p) {
             p.step(clock);
         });
+
+        _.each(this.__toRemove, function(p){
+            this.__removeParticle(p);
+        });
+        this.__toRemove = [];
     }
     ,destroy : function() {
         this.__particles = [];
@@ -1361,6 +1367,10 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
         return this.__particles;
     }
     ,removeParticle : function(particle) {
+        this.__toRemove.push(particle);
+    }
+
+    ,__removeParticle : function(particle) {
         var i;
         if(particle.__id){
             for(i=0; i<this.__particles.length; i++){
@@ -1386,11 +1396,40 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
 
         options = options ? _.extend(options,defaultOptions) : defaultOptions;
         newParticle = new particleType(options);
-        this.particles.push(newParticle);
+        this.__particles.push(newParticle);
 
         return newParticle;
     }
 });
+/*
+ This script defines the particle object
+ */
+
+TwoCylinder.Engine.Particle = TwoCylinder.Engine.Root.extend({
+    initialize : function(options) {
+        options = _.extend({}, options);
+        this.__id = options.id;
+        this.__emitter = options.emitter;
+    }
+    // This function is responsible for moving the particle or otherwise tracking its lifecycle
+    ,step : function(clock) {
+        return null;
+    }
+    ,draw : function(canvas,x,y,rotation,scale,emitter){
+        var context = canvas.getContext('2d');
+        context.beginPath();
+        context.arc(x, y, 20, 0, 2 * Math.PI, false);
+        context.fillStyle = 'grey';
+        context.fill();
+        context.lineWidth = 5;
+        context.strokeStyle = '#333333';
+        context.stroke();
+    }
+    ,destroy : function() {
+        this.__emitter.removeParticle(this);
+    }
+});
+
 TwoCylinder.IO.EVENT_TYPES = {};
 TwoCylinder.IO.EVENT_TYPES.TAP = 'tap';
 TwoCylinder.IO.EVENT_TYPES.DOUBLE = 'doubletap';
