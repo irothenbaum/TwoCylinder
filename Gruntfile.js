@@ -39,6 +39,9 @@ module.exports = function(grunt) {
 
                     // SPRITES
                     , "src/sprites/joystick.js"
+
+                    // UTILITIES
+                    , "src/utilities/color_transition.js"
                 ]
                 , dest : "dist/twocylinder.js"
             }

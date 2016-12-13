@@ -14,7 +14,8 @@
         this.Entities = {};
         this.IO = {};
         this.Sprites = {};
-        
+        this.Utilities = {};
+
         /*
          * Library files go here
          */

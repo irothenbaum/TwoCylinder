@@ -10,8 +10,9 @@
     
     <!-- Load Game code -->
     <script type="text/javascript" src="./js/main.js"></script>
-    <script type="text/javascript" src="js/particles/shrinking_circle.js"></script>
+    <script type="text/javascript" src="./js/particles/shrinking_circle.js"></script>
     <script type="text/javascript" src="./js/emitters/explosion.js"></script>
+    <script type="text/javascript" src="./js/emitters/fire.js"></script>
 
     <!-- Start the test -->
     <script type="text/javascript">
@@ -22,7 +23,7 @@
             var colored = document.getElementById("colored");
             var input = document.getElementById("colorInput");
             input.onblur = function(){
-                colored.setAttribute("style", "background:#"+input.value+";");
+                colored.setAttribute("style", "background:"+input.value+";");
             };
         }
     </script>
@@ -32,7 +33,7 @@
     <div id="controls">
         <ul id="colors">
             <li>
-                #<input type="text" id="colorInput" placeholder="Hex Value">
+                <input type="text" id="colorInput" placeholder="Color">
             </li>
         </ul>
         <ul id="particles">

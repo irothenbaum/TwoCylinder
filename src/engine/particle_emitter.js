@@ -37,10 +37,7 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
             p.step(clock);
         });
 
-        _.each(this.__toRemove, function(p){
-            this.__removeParticle(p);
-        });
-        this.__toRemove = [];
+        this.__removeParticles();
     }
     ,destroy : function() {
         this.__particles = [];
@@ -62,17 +59,24 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
         this.__toRemove.push(particle);
     }
 
-    ,__removeParticle : function(particle) {
+    ,__removeParticles : function(particle) {
+        if (!this.__toRemove.length) {
+            return
+        }
+
         var i;
-        if(particle.__id){
-            for(i=0; i<this.__particles.length; i++){
-                if(this.__particles[i].__id == particle.__id){
-                    this.__particles.splice(i,1);
+        var j;
+        for(i=0; i<this.__toRemove.length; i++) {
+            for(j=0; j<this.__particles.length; j++){
+                if(this.__particles[j].__id == this.__toRemove[i]){
+                    delete this.__particles[j].__id;
+                    this.__particles.splice(j,1);
                     break;
                 }
             }
         }
-        return particle;
+
+        this.__toRemove = [];
     }
     /**
      * It may be advantageous for particle emitters to emit particles one at a time

@@ -28,6 +28,9 @@ MyGame.Game = TwoCylinder.Engine.Game.extend({
             case "explosion":
                 this.__emitter = new MyGame.Emitters.Explosion();
                 break;
+            case "fire":
+                this.__emitter = new MyGame.Emitters.Fire();
+                break;
             default:
                 throw "Unknown Type";
         }

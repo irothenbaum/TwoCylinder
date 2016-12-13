@@ -419,6 +419,7 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         this.__followInstance = false;
         
         this.__ios = [];
+        this.__toRemoveIOs = [];
         this.__ioKey = 0;
 
         // id is set by the world when it's inserted
@@ -430,10 +431,9 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
     ,draw : function(time){
         var i;
         var instances;
-        var inst;
         var particles;
-        var part;
         var ios;
+        var that = this;
 
         // before we draw, we want to re-center on our tracked instance if we have one
         if(this.__followInstance){
@@ -451,43 +451,42 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         
         // get all instances and loop through them
         instances = this.__world.getInstances();
-        for(i=0; i < instances.length; i++){
-            inst = instances[i];
-
+        _.each(instances, function(inst){
             // skip invisible instances
             if(!inst.isVisible()){
-                continue;
+                return;
             }
-            
             // if this instance's appearance is inside this view box
             // NOTE: we check the appearance's bounding because it may be desirable for the calculated collision box
             // to be different from what is considered visible. for example, if the appearance draws shadows
             // those shadows might not be collidable with other entities, but should be included in
             // determining whether or not to draw the entity to a view.
-            if( this.collides( inst.getAppearance().getBounding() ) ){
+            if( that.collides( inst.getAppearance().getBounding() ) ){
                 //then we draw the instance and pass the view so it can reference the view's
                 //transitions and transformation (rotation, scale, etc)
                 inst.draw(
-                    this
-                    ,inst.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x
-                    ,inst.getBounding().getCenter().y - this.getBounding().getContainingRectangle().origin_y
+                    that
+                    ,inst.getBounding().getCenter().x - that.getBounding().getContainingRectangle().origin_x
+                    ,inst.getBounding().getCenter().y - that.getBounding().getContainingRectangle().origin_y
                 );
             }
-        }
+        });
 
         // Draw each particle emitter
         particles = this.__world.getParticleEmitters();
-        for (i=0; i<particles.length; i++) {
-            part = particles[i];
-            if (this.collides(part.getBounding())) {
+        _.each(particles, function(part){
+            if (that.collides(part.getBounding())) {
                 part.draw(
-                    this,
-                    part.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x,
-                    part.getBounding().getCenter().y - this.getBounding().getContainingRectangle().origin_y
+                    that,
+                    part.getBounding().getCenter().x - that.getBounding().getContainingRectangle().origin_x,
+                    part.getBounding().getCenter().y - that.getBounding().getContainingRectangle().origin_y
                 )
             }
-        }
-        
+        });
+
+        // check if any IOs have been removed
+        this.__removeIOs();
+
         //now we loop through the IO handlers for this view
         ios = this.getIOs();
         for(i=0; i<ios.length; i++){
@@ -523,24 +522,35 @@ IO FUNCTIONS
 ****************************************************************************/    
     ,removeIO : function(io){
         if(io.__id){
-            for(var i=0; i<this.__instances; i++){
-                if(this.__instances[i].__id == io.__id){
-                    delete this.__instances[i];
-                    break;
-                }
-            }
+            this.__toRemoveIOs.push(io.__id);
         }
         
         return io;
     }
-    ,addIO: function(io){
-        if(!io.__id){
-            io.__id = ++this.__ioKey;
-        }else{
-            // should make sure it isn't already in the array
-            this.removeIO(io);
+    ,__removeIOs : function() {
+        if (!this.__toRemoveIOs.length) {
+            return;
         }
-        
+        var i;
+        var j;
+        for(i=0; i<this.__toRemoveIOs.length; i++) {
+            for(j=0; j<this.__ios.length; j++){
+                if(this.__ios[j].__id == this.__toRemoveIOs[i]){
+                    delete this.__ios[j].__id;
+                    this.__ios.splice(j,1);
+                    break;
+                }
+            }
+        }
+
+        this.__toRemoveIOs = [];
+    }
+    ,addIO: function(io){
+        if(io.__id){
+            throw "IO already added";
+        }
+        io.__id = ++this.__ioKey;
+
         this.__ios.push(io);
        
         return io;
@@ -582,6 +592,11 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
         this.__instances = [];
         this.__particleEmitters = [];
         this.__views = [];
+
+        this.__toRemoveParticleEmitters = [];
+        this.__toRemoveInstances = [];
+        this.__toRemoveViews = [];
+
         this.__collisionGroups = {};
         this.__background = options.background || new TwoCylinder.Engine.Background();
         
@@ -607,90 +622,63 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     }
     
     ,__preStep : function(time){
-        var i;
-
-        // we have each instance perform a frame step. 
-        for(i=0; i<this.__instances.length; i++){
-            if(this.__instances[i]){
-                this.__instances[i].preStep(time);
-            }
-        }
+        // we have each instance perform a frame step.
+        _.each(this.__instances, function(inst){
+            inst.preStep(time);
+        });
     }
     
     ,__postStep : function(time){
-        var i;
-        var obj;
+        // we have each instance perform a frame step.
+        _.each(this.__instances, function(inst){
+            inst.postStep(time);
+        });
 
-            // we have each instance perform a frame step.
-        for(i=0; i<this.__instances.length; i++){
-            if(this.__instances[i]){
-                obj = this.__instances[i].postStep(time);
-            }
-        }
+        this.__removeParticleEmitters();
+        this.__removeViews();
+        this.__removeInstances();
     }
     
     ,loop : function(){
         this.__preStep(++this.__clock);
-        var i;
-        var j;
-        var k;
-        var part;
-        var me;
-        var other;
-        var obj;
-        var instanceCollisionGroups;
-        var group;
+        var that = this;
 
         // we have each instance perform a frame step.
-        for(i=0; i<this.__particleEmitters.length; i++){
-            if(this.__particleEmitters[i]){
-                part = this.__particleEmitters[i];
-                part.step(this.__clock);
-            }
-        }
+        _.each(this.__particleEmitters, function(part) {
+            part.step(that.__clock);
+        });
 
-        // we have each instance perform a frame step. 
-        for(i=0; i<this.__instances.length; i++){
-            if(this.__instances[i]){
-                obj = this.__instances[i];
-                obj.step(this.__clock);
-            }
-        }
+        // we have each instance perform a frame step.
+        _.each(this.__instances, function(inst) {
+            inst.step(that.__clock);
+        });
 
         // check for collisions
-        for(i=0; i<this.__instances.length; i++){
-            if(this.__instances[i].hasCollisionChecking()){
-                me = this.__instances[i];
-                instanceCollisionGroups = me.getCollidableGroups();
-                
-                // for each group, we want to search each of the elements in the world of that group
-                for(j=0; j<instanceCollisionGroups.length; j++){
-                    group = instanceCollisionGroups[j];
-                    if(this.__collisionGroups[group] && this.__collisionGroups[group].length){
-                        for(k=0; k<this.__collisionGroups[group].length; k++){
-                            other = this.__collisionGroups[group][k];
-                            
-                            // cannot collide with self
-                            if( me.__id == other.__id ){
-                                continue;
-                            }
+        _.each(this.__instances, function(me) {
+            if (me.hasCollisionChecking()) {
+                var myCollisionGroups = me.getCollidableGroups();
+                _.each(myCollisionGroups, function(group){
+                    // if there are instances that match the groups im listening for
+                    if (that.__collisionGroups[group] && that.__collisionGroups[group].length) {
 
-                            // if their collision boxes touch, we issue a collision
-                            if(me.collides(other.getBounding())){
+                        // for each of those matching instance types,
+                        _.each(that.__collisionGroups[group], function(other){
+
+                            // if they're not me, and I collide with them
+                            if (me.__id != other.__id && me.collides(other.getBounding())) {
                                 me.handleCollidedWith(other);
                             }
-                        }
+                        });
                     }
-                }
+                });
             }
-        }
+        });
 
-        // for every view attached to this world, we have them draw
-        for(i=0; i<this.__views.length; i++){
-            if(this.__views[i]){
-                this.__views[i].draw(this.__clock);
-            }
-        }
+        // draw the views
+        _.each(this.__views, function(view){
+            view.draw(that.__clock);
+        });
+
         this.__postStep(this.__clock);
     }
     
@@ -704,26 +692,37 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
  INSTANCE FUNCTIONS
  ****************************************************************************/    
     ,removeInstance : function(instance){
-        var i;
         if(instance.__id){
-            this.__removeFromCollisionGroup(instance);
-            for(i=0; i<this.__instances.length; i++){
-                if(this.__instances[i].__id == instance.__id){
-                    this.__instances.splice(i,1);
+            // we add their id to the array of instances to remove
+            this.__toRemoveInstances.push(instance.__id);
+        }
+        return instance;
+    }
+    ,__removeInstances : function() {
+        if (!this.__toRemoveInstances.length) {
+            return;
+        }
+        var i;
+        var j;
+        for (i=0; i<this.__toRemoveInstances.length; i++) {
+            for(j=0; j<this.__instances.length; j++){
+                if(this.__instances[j].__id == this.__toRemoveInstances[i]){
+                    this.__removeFromCollisionGroup(this.__instances[j]);
+                    delete this.__instances[j].__id;
+                    this.__instances.splice(j,1);
                     break;
                 }
             }
         }
-        return instance;
+
+        this.__toRemoveInstances = [];
     }
     
     ,addInstance : function(instance){
-        if(!instance.__id){
-            instance.__id = ++this.__instanceKey;
-        }else{
-            // should make sure it isn't already in the array
-            this.removeInstance(instance);
+        if(instance.__id){
+            throw "Instance already added";
         }
+        instance.__id = ++this.__instanceKey;
         // add it to the big list
         this.__instances.push(instance);
         // also add it according to its collision group
@@ -740,11 +739,10 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
  VIEW FUNCTIONS
  ****************************************************************************/
     ,addView : function(view){
-        if (!view.__id){
-            view.__id = ++this.__viewKey;
-        } else {
-            this.removeView(view);
+        if (view.__id) {
+            throw "View already added";
         }
+        view.__id = ++this.__viewKey;
         view.setWorld(this);
         this.__views.push(view);
         
@@ -754,16 +752,30 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     ,getViews : function(){
         return this.__views;
     }
-    
-    ,removeView : function(view){
+
+    ,__removeViews : function() {
+        if (!this.__toRemoveViews.length) {
+            return;
+        }
         var i;
-        if(view.__id){
-            for(i=0; i<this.__views.length; i++){
-                if(this.__views[i].__id == view.__id){
-                    this.__views.splice(i,1);
+        var j;
+        for (i=0; i<this.__toRemoveViews.length; i++) {
+            for(j=0; j<this.__views.length; j++){
+                if(this.__views[j].__id == this.__toRemoveViews[i]){
+                    delete this.__views[j].__id;
+                    this.__views.splice(j,1);
                     break;
                 }
             }
+        }
+
+        this.__toRemoveViews = [];
+    }
+    
+    ,removeView : function(view){
+        if(view.__id) {
+            // we add their id to the array of views to remove
+            this.__toRemoveViews.push(view.__id);
         }
         return view;
     }
@@ -771,30 +783,41 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
 /****************************************************************************
 PARTICLE FUNCTIONS
 ****************************************************************************/
-   ,addParticleEmitter : function(emitter){
-        if (!emitter.__id){
-            emitter.__id = ++this.__emitterKey;
-        } else {
-            this.removeParticleEmitter(emitter);
+    ,addParticleEmitter : function(emitter){
+        if (emitter.__id){
+            throw "Emitter already added";
         }
+        emitter.__id = ++this.__emitterKey;
         this.__particleEmitters.push(emitter);
         return emitter;
-   }
-   
-   ,removeParticleEmitter : function(emitter){
+    }
+
+    ,removeParticleEmitter : function(emitter){
+        if (emitter.__id) {
+            // we add their id to the array of emitters to remove
+            this.__toRemoveParticleEmitters.push(emitter.__id);
+        }
+        return emitter;
+    }
+    ,__removeParticleEmitters : function(){
+        if (!this.__toRemoveParticleEmitters.length) {
+            return;
+        }
         var i;
-        if(emitter.__id){
-            for(i=0; i<this.__particleEmitters.length; i++){
-                if(this.__particleEmitters[i].__id == emitter.__id){
-                    this.__particleEmitters.splice(i,1);
+        var j;
+        for(i=0; i<this.__toRemoveParticleEmitters.length; i++) {
+            for(j=0; j<this.__particleEmitters.length; j++){
+                if(this.__particleEmitters[j].__id == this.__toRemoveParticleEmitters[i]){
+                    delete this.__particleEmitters[j].__id;
+                    this.__particleEmitters.splice(j,1);
                     break;
                 }
             }
         }
-        return emitter;
-   }
 
-   ,getParticleEmitters : function() {
+        this.__toRemoveParticleEmitters = [];
+    }
+    ,getParticleEmitters : function() {
         return this.__particleEmitters;
     }
 /****************************************************************************
@@ -809,7 +832,7 @@ BACKGROUND FUNCTIONS
     }
 /****************************************************************************
 HELPER FUNCTIONS
-****************************************************************************/    
+****************************************************************************/
     ,__addToCollisionGroup : function(instance){
         var group = instance.getCollisionGroup();
 
@@ -1345,8 +1368,9 @@ TwoCylinder.Engine.ParticleEmitter = TwoCylinder.Engine.Generic.extend({
             p.step(clock);
         });
 
+        var that = this;
         _.each(this.__toRemove, function(p){
-            this.__removeParticle(p);
+            that.__removeParticle(p);
         });
         this.__toRemove = [];
     }

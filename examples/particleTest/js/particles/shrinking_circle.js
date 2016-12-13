@@ -9,7 +9,7 @@ MyGame.Particles.ShrinkingCircle = TwoCylinder.Engine.Particle.extend({
         this._velocity = options.velocity;
         this._color = options.color || '#ccc';
 
-        this._currentCenter = {x : 0, y : 0};
+        this._currentCenter = options.center || {x : 0, y : 0};
     }
     ,step : function(clock) {
         this._currentCenter = TwoCylinder.Engine.Geometry.pointFromVector(this._currentCenter, this._velocity);
@@ -20,10 +20,11 @@ MyGame.Particles.ShrinkingCircle = TwoCylinder.Engine.Particle.extend({
         }
     }
     ,draw : function(canvas, x, y, rotation, scale, emitter){
+        var thisColor = (Array.isArray(this._color)) ? this._color[0] : this._color;
         var context = canvas.getContext('2d');
         context.beginPath();
         context.arc(x + this._currentCenter.x, y + this._currentCenter.y, this._size, 0, 2 * Math.PI, false);
-        context.fillStyle = this._color;
+        context.fillStyle = thisColor;
         context.fill();
     }
 });

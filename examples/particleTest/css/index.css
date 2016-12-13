@@ -10,6 +10,13 @@ canvas{
     float:left;
 }
 
+li {
+    cursor:pointer;
+}
+li:hover {
+    font-weight:bold;
+}
+
 #black{ background:black; }
 #white { background: white; }
 #colored { background: #777; }

@@ -20,6 +20,7 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         this.__followInstance = false;
         
         this.__ios = [];
+        this.__toRemoveIOs = [];
         this.__ioKey = 0;
 
         // id is set by the world when it's inserted
@@ -31,10 +32,9 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
     ,draw : function(time){
         var i;
         var instances;
-        var inst;
         var particles;
-        var part;
         var ios;
+        var that = this;
 
         // before we draw, we want to re-center on our tracked instance if we have one
         if(this.__followInstance){
@@ -52,43 +52,42 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         
         // get all instances and loop through them
         instances = this.__world.getInstances();
-        for(i=0; i < instances.length; i++){
-            inst = instances[i];
-
+        _.each(instances, function(inst){
             // skip invisible instances
             if(!inst.isVisible()){
-                continue;
+                return;
             }
-            
             // if this instance's appearance is inside this view box
             // NOTE: we check the appearance's bounding because it may be desirable for the calculated collision box
             // to be different from what is considered visible. for example, if the appearance draws shadows
             // those shadows might not be collidable with other entities, but should be included in
             // determining whether or not to draw the entity to a view.
-            if( this.collides( inst.getAppearance().getBounding() ) ){
+            if( that.collides( inst.getAppearance().getBounding() ) ){
                 //then we draw the instance and pass the view so it can reference the view's
                 //transitions and transformation (rotation, scale, etc)
                 inst.draw(
-                    this
-                    ,inst.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x
-                    ,inst.getBounding().getCenter().y - this.getBounding().getContainingRectangle().origin_y
+                    that
+                    ,inst.getBounding().getCenter().x - that.getBounding().getContainingRectangle().origin_x
+                    ,inst.getBounding().getCenter().y - that.getBounding().getContainingRectangle().origin_y
                 );
             }
-        }
+        });
 
         // Draw each particle emitter
         particles = this.__world.getParticleEmitters();
-        for (i=0; i<particles.length; i++) {
-            part = particles[i];
-            if (this.collides(part.getBounding())) {
+        _.each(particles, function(part){
+            if (that.collides(part.getBounding())) {
                 part.draw(
-                    this,
-                    part.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x,
-                    part.getBounding().getCenter().y - this.getBounding().getContainingRectangle().origin_y
+                    that,
+                    part.getBounding().getCenter().x - that.getBounding().getContainingRectangle().origin_x,
+                    part.getBounding().getCenter().y - that.getBounding().getContainingRectangle().origin_y
                 )
             }
-        }
-        
+        });
+
+        // check if any IOs have been removed
+        this.__removeIOs();
+
         //now we loop through the IO handlers for this view
         ios = this.getIOs();
         for(i=0; i<ios.length; i++){
@@ -124,24 +123,35 @@ IO FUNCTIONS
 ****************************************************************************/    
     ,removeIO : function(io){
         if(io.__id){
-            for(var i=0; i<this.__instances; i++){
-                if(this.__instances[i].__id == io.__id){
-                    delete this.__instances[i];
-                    break;
-                }
-            }
+            this.__toRemoveIOs.push(io.__id);
         }
         
         return io;
     }
-    ,addIO: function(io){
-        if(!io.__id){
-            io.__id = ++this.__ioKey;
-        }else{
-            // should make sure it isn't already in the array
-            this.removeIO(io);
+    ,__removeIOs : function() {
+        if (!this.__toRemoveIOs.length) {
+            return;
         }
-        
+        var i;
+        var j;
+        for(i=0; i<this.__toRemoveIOs.length; i++) {
+            for(j=0; j<this.__ios.length; j++){
+                if(this.__ios[j].__id == this.__toRemoveIOs[i]){
+                    delete this.__ios[j].__id;
+                    this.__ios.splice(j,1);
+                    break;
+                }
+            }
+        }
+
+        this.__toRemoveIOs = [];
+    }
+    ,addIO: function(io){
+        if(io.__id){
+            throw "IO already added";
+        }
+        io.__id = ++this.__ioKey;
+
         this.__ios.push(io);
        
         return io;
