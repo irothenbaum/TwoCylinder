@@ -9,6 +9,7 @@ TwoCylinder.Engine.Vector = TwoCylinder.Engine.Root.extend({
             speed : 0
         },options);
 
+        console.log("HERE");
         this.__direction = options.direction;
         this.__speed = options.speed;
     }
