@@ -1,4 +1,4 @@
-(function (root, factory) {if(typeof module === "object" && module.exports){module.exports = factory(require("underscore"));} else if(typeof define === "function" && define.amd){define("TwoCylinder",["underscore"], factory);} else {root["TwoCylinder"] = factory(root._);}}(this, function(_) {return new function(){var TwoCylinder = this;this.Engine = {};this.Entities = {};this.IO = {};this.Sprites = {};
+(function (root, factory) {if(typeof module === "object" && module.exports){module.exports = factory(require("underscore"));} else if(typeof define === "function" && define.amd){define("TwoCylinder",["underscore"], factory);} else {root["TwoCylinder"] = factory(root._);}}(this, function(_) {return new function(){var TwoCylinder = this;this.Engine = {};this.Entities = {};this.IO = {};this.Sprites = {};this.Utilities = {};
 /*
     This script contains helper objects and functions that can be used by all classes
 */
@@ -888,7 +888,6 @@ TwoCylinder.Engine.Vector = TwoCylinder.Engine.Root.extend({
             speed : 0
         },options);
 
-        console.log("HERE");
         this.__direction = options.direction;
         this.__speed = options.speed;
     }
