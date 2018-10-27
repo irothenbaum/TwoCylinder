@@ -1,24 +1,24 @@
 const Root = require('./root')
 
 class Game extends Root {
-    constructor () {
+    constructor() {
         super()
         this.__world = undefined;
     }
 
-    start (){
+    start() {
         return this.getWorld().start();
     }
 
-    exit (){
+    exit() {
         return this.getWorld().exit();
     }
 
-    setWorld (w){
+    setWorld(w) {
         this.__world = w;
     }
 
-    getWorld (){
+    getWorld() {
         return this.__world;
     }
 }

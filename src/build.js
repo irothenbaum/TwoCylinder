@@ -5,6 +5,7 @@ const BoundingBox = require('./engine/bounding/bounding_box')
 
 const Appearance = require('./engine/appearance')
 const Background = require('./engine/background')
+const Controller = require('./engine/controller')
 const Entity = require('./engine/entity')
 const Game = require('./engine/game')
 const Generic = require('./engine/generic')
@@ -12,6 +13,7 @@ const Particle = require('./engine/particle')
 const ParticleEmitter = require('./engine/particle_emitter')
 const Root = require('./engine/root')
 const Vector = require('./engine/vector')
+const View = require('./engine/view')
 const World = require('./engine/world')
 
 let EngineContainer = {
@@ -20,6 +22,7 @@ let EngineContainer = {
     BoundingCircle,
     BoundingPoint,
     Appearance,
+    Controller,
     Background,
     Entity,
     Game,
@@ -28,6 +31,7 @@ let EngineContainer = {
     Particle,
     Root,
     World,
+    View,
     Vector
 }
 

@@ -5,7 +5,7 @@ class Generic extends Root {
 
     constructor (options) {
         super (options)
-        this.setBoundingBox(options.bounding)
+        this.setBounding(options.bounding)
     }
 
     collides (bounding) {

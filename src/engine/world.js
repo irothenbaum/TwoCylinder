@@ -16,10 +16,12 @@ class World extends Generic {
 
         this.__instances = []
         this.__particleEmitters = []
+        this.__controllers = []
         this.__views = []
 
         this.__toRemoveParticleEmitters = []
         this.__toRemoveInstances = []
+        this.__toRemoveControllers = []
         this.__toRemoveViews = []
 
         this.__collisionGroups = {}
@@ -28,6 +30,7 @@ class World extends Generic {
         this.__instanceKey = 0
         this.__viewKey = 0
         this.__emitterKey = 0
+        this.__controllerKey = 0
         this.__clock = 0
     }
 
@@ -47,6 +50,11 @@ class World extends Generic {
         this.__instances.forEach((inst) => {
             inst.preStep(time)
         })
+
+        // we have each instance perform a frame step.
+        this.__controllers.forEach((cont) => {
+            cont.preStep(time)
+        })
     }
 
     __postStep (time){
@@ -55,6 +63,12 @@ class World extends Generic {
             inst.postStep(time)
         })
 
+        // we have each instance perform a frame step.
+        this.__controllers.forEach((cont) => {
+            cont.postStep(time)
+        })
+
+        this.__removeControllers()
         this.__removeParticleEmitters()
         this.__removeViews()
         this.__removeInstances()
@@ -62,6 +76,11 @@ class World extends Generic {
 
     loop (){
         this.__preStep(++this.__clock)
+
+        // we have each instance perform a frame step.
+        this.__controllers.forEach((cont) => {
+            cont.step(this.__clock)
+        })
 
         // we have each instance perform a frame step.
         this.__particleEmitters.forEach((part) => {
@@ -119,7 +138,10 @@ class World extends Generic {
         return instance
     }
     __removeInstances () {
-        disjoinArray2FromArray1(this.__instances, this.__toRemoveInstances, this.__removeFromCollisionGroup)
+        if (!this.__toRemoveInstances.length) {
+            return
+        }
+        Functions.disjoinArray2FromArray1(this.__instances, this.__toRemoveInstances, this.__removeFromCollisionGroup)
         this.__toRemoveInstances = []
     }
 
@@ -159,7 +181,10 @@ class World extends Generic {
     }
 
     __removeViews () {
-        disjoinArray2FromArray1(this.__views, this.__toRemoveViews)
+        if (!this.__toRemoveViews.length) {
+            return
+        }
+        Functions.disjoinArray2FromArray1(this.__views, this.__toRemoveViews)
 
         this.__toRemoveViews = []
     }
@@ -192,13 +217,48 @@ class World extends Generic {
         return emitter
     }
     __removeParticleEmitters (){
-        disjoinArray2FromArray1(this.__particleEmitters, this.__toRemoveParticleEmitters)
+        if (!this.__toRemoveParticleEmitters.length) {
+            return
+        }
+        Functions.disjoinArray2FromArray1(this.__particleEmitters, this.__toRemoveParticleEmitters)
 
         this.__toRemoveParticleEmitters = []
     }
     getParticleEmitters () {
         return this.__particleEmitters
     }
+
+    /****************************************************************************
+     PARTICLE FUNCTIONS
+     ****************************************************************************/
+    addController (controller){
+        if (controller.__id){
+            throw "Emitter already added"
+        }
+        controller.__id = ++this.__controllerKey
+        this.__controllers.push(controller)
+        return controller
+    }
+
+    removeController (controller){
+        if (controller.__id) {
+            // we add their id to the array of emitters to remove
+            this.__toRemoveControllers.push(controller)
+        }
+        return controller
+    }
+    __removeControllers (){
+        if (!this.__toRemoveControllers.length) {
+            return
+        }
+        Functions.disjoinArray2FromArray1(this.__controllers, this.__toRemoveControllers)
+
+        this.__toRemoveControllers = []
+    }
+    getControllers () {
+        return this.__controllers
+    }
+
     /****************************************************************************
      BACKGROUND FUNCTIONS
      ****************************************************************************/

@@ -378,7 +378,7 @@ function (_Root) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Generic).call(this, options));
 
-    _this.setBoundingBox(options.bounding);
+    _this.setBounding(options.bounding);
 
     return _this;
   }
@@ -1721,21 +1721,25 @@ var Appearance = __webpack_require__(8);
 
 var Background = __webpack_require__(9);
 
-var Entity = __webpack_require__(14);
+var Controller = __webpack_require__(14);
 
-var Game = __webpack_require__(15);
+var Entity = __webpack_require__(15);
+
+var Game = __webpack_require__(16);
 
 var Generic = __webpack_require__(2);
 
-var Particle = __webpack_require__(16);
+var Particle = __webpack_require__(17);
 
-var ParticleEmitter = __webpack_require__(17);
+var ParticleEmitter = __webpack_require__(18);
 
 var Root = __webpack_require__(1);
 
 var Vector = __webpack_require__(7);
 
-var World = __webpack_require__(18);
+var View = __webpack_require__(19);
+
+var World = __webpack_require__(20);
 
 var EngineContainer = {
   Bounding: Bounding,
@@ -1743,6 +1747,7 @@ var EngineContainer = {
   BoundingCircle: BoundingCircle,
   BoundingPoint: BoundingPoint,
   Appearance: Appearance,
+  Controller: Controller,
   Background: Background,
   Entity: Entity,
   Game: Game,
@@ -1751,6 +1756,7 @@ var EngineContainer = {
   Particle: Particle,
   Root: Root,
   World: World,
+  View: View,
   Vector: Vector
 };
 
@@ -1769,7 +1775,7 @@ var Event = __webpack_require__(10);
 
 var Touch = __webpack_require__(11);
 
-var Joystick = __webpack_require__(19);
+var Joystick = __webpack_require__(21);
 
 var IOContainer = {
   Event: Event,
@@ -1792,6 +1798,67 @@ module.exports = TwoCylinder;
 
 /***/ }),
 /* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+var Root = __webpack_require__(1);
+
+var Controller =
+/*#__PURE__*/
+function (_Root) {
+  _inherits(Controller, _Root);
+
+  function Controller(options) {
+    var _this;
+
+    _classCallCheck(this, Controller);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Controller).call(this, options));
+    _this.world = options.world;
+    return _this;
+  }
+
+  _createClass(Controller, [{
+    key: "preStep",
+    value: function preStep(worldClock) {
+      return;
+    }
+  }, {
+    key: "step",
+    value: function step(worldClock) {
+      return;
+    }
+  }, {
+    key: "postStep",
+    value: function postStep(worldClock) {
+      return;
+    }
+  }]);
+
+  return Controller;
+}(Root);
+
+module.exports = Controller;
+
+/***/ }),
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -2075,7 +2142,7 @@ function (_Generic) {
 module.exports = Entity;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -2141,7 +2208,7 @@ function (_Root) {
 module.exports = Game;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -2215,7 +2282,7 @@ function (_Root) {
 module.exports = Particle;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -2348,7 +2415,220 @@ function (_Generic) {
 module.exports = ParticleEmitter;
 
 /***/ }),
-/* 18 */
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+/*
+    This script defines a this.__world's view.
+    Views are attached to this.__worlds and help determine which instances should be drawn to the this.__canvas and where
+*/
+var Generic = __webpack_require__(2);
+
+var Functions = __webpack_require__(0).Functions;
+
+var View =
+/*#__PURE__*/
+function (_Generic) {
+  _inherits(View, _Generic);
+
+  function View(options) {
+    var _this;
+
+    _classCallCheck(this, View);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(View).call(this, options));
+    _this.__canvas = options.canvas;
+    _this._rotation = options.rotation || 0;
+    _this._scale = options.scale || 1;
+    _this._resolution = options.resolution || 1;
+    _this.__canvas.width = _this.getBounding().width * _this._resolution;
+    _this.__canvas.height = _this.getBounding().height * _this._resolution;
+    _this.__canvas.style.width = _this.getBounding().width + "px";
+    _this.__canvas.style.height = _this.getBounding().height + "px";
+    _this.__followInstance = false;
+    _this.__ios = [];
+    _this.__toRemoveIOs = [];
+    _this.__ioKey = 0; // id is set by the world when it's inserted
+
+    _this.__id = null;
+    return _this;
+  }
+
+  _createClass(View, [{
+    key: "clearCanvas",
+    value: function clearCanvas() {
+      this.__canvas.getContext('2d').clearRect(0, 0, this.__canvas.width, this.__canvas.height);
+    }
+  }, {
+    key: "draw",
+    value: function draw(time) {
+      var i;
+      var instances;
+      var particles;
+      var ios;
+      var that = this; // before we draw, we want to re-center on our tracked instance if we have one
+
+      if (this.__followInstance) {
+        this.getBounding().setCenterWithinBounding(this.__followInstance.getBounding().getCenter(), this.__world.getBounding());
+      } // prepare to draw
+
+
+      this.clearCanvas(); // first draw the world's background
+
+      this.__world.getBackground().draw(this); // get all instances and loop through them
+
+
+      this.__world.getInstances().forEach(function (inst) {
+        // skip invisible instances
+        if (!inst.isVisible()) {
+          return;
+        } // if this instance's appearance is inside this view box
+        // NOTE: we check the appearance's bounding because it may be desirable for the calculated collision box
+        // to be different from what is considered visible. for example, if the appearance draws shadows
+        // those shadows might not be collidable with other entities, but should be included in
+        // determining whether or not to draw the entity to a view.
+
+
+        if (that.collides(inst.getAppearance().getBounding())) {
+          //then we draw the instance and pass the view so it can reference the view's
+          //transitions and transformation (rotation, scale, etc)
+          inst.draw(that, inst.getBounding().getCenter().x - that.getBounding().getContainingRectangle().origin_x, inst.getBounding().getCenter().y - that.getBounding().getContainingRectangle().origin_y);
+        }
+      }); // Draw each particle emitter
+
+
+      this.__world.getParticleEmitters().forEach(function (part) {
+        if (that.collides(part.getBounding())) {
+          part.draw(that, part.getBounding().getCenter().x - that.getBounding().getContainingRectangle().origin_x, part.getBounding().getCenter().y - that.getBounding().getContainingRectangle().origin_y);
+        }
+      }); // check if any IOs have been removed
+
+
+      this.__removeIOs(); //now we loop through the IO handlers for this view
+
+
+      this.getIOs().forEach(function (io) {
+        io.draw();
+      });
+    }
+    /****************************************************************************
+    GETTER AND SETTER FUNCTIONS
+    ****************************************************************************/
+
+  }, {
+    key: "getCanvas",
+    value: function getCanvas() {
+      return this.__canvas;
+    }
+  }, {
+    key: "getWorld",
+    value: function getWorld() {
+      return this.__world;
+    }
+  }, {
+    key: "setWorld",
+    value: function setWorld(world) {
+      this.__world = world;
+    }
+  }, {
+    key: "getRotation",
+    value: function getRotation() {
+      return this._rotation;
+    }
+  }, {
+    key: "setRotation",
+    value: function setRotation(r) {
+      this._rotation = r;
+    }
+  }, {
+    key: "getScale",
+    value: function getScale() {
+      return this._scale;
+    }
+  }, {
+    key: "setScale",
+    value: function setScale(s) {
+      this._scale = s;
+    }
+    /****************************************************************************
+    IO FUNCTIONS
+    ****************************************************************************/
+
+  }, {
+    key: "removeIO",
+    value: function removeIO(io) {
+      if (io.__id) {
+        this.__toRemoveIOs.push(io);
+      }
+
+      return io;
+    }
+  }, {
+    key: "__removeIOs",
+    value: function __removeIOs() {
+      Functions.disjoinArray2FromArray1(this.__ios, this.__toRemoveIOs);
+      this.__toRemoveIOs = [];
+    }
+  }, {
+    key: "addIO",
+    value: function addIO(io) {
+      if (io.__id) {
+        throw "IO already added";
+      }
+
+      io.__id = ++this.__ioKey;
+
+      this.__ios.push(io);
+
+      return io;
+    }
+  }, {
+    key: "getIOs",
+    value: function getIOs() {
+      return this.__ios;
+    } // this gets the mouse position by world, view, and device OR any one of them as an x,y tuple
+
+  }, {
+    key: "getMousePosition",
+    value: function getMousePosition(evt) {
+      return new TwoCylinder.IO.Event(evt, this);
+    }
+  }, {
+    key: "followInstance",
+    value: function followInstance(instance) {
+      if (instance) {
+        this.__followInstance = instance;
+      } else {
+        this.__followInstance = false;
+      }
+    }
+  }]);
+
+  return View;
+}(Generic);
+
+module.exports = View;
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -2397,15 +2677,18 @@ function (_Generic) {
     _this._fps = options.fps || 30;
     _this.__instances = [];
     _this.__particleEmitters = [];
+    _this.__controllers = [];
     _this.__views = [];
     _this.__toRemoveParticleEmitters = [];
     _this.__toRemoveInstances = [];
+    _this.__toRemoveControllers = [];
     _this.__toRemoveViews = [];
     _this.__collisionGroups = {};
     _this.__background = options.background || new Background();
     _this.__instanceKey = 0;
     _this.__viewKey = 0;
     _this.__emitterKey = 0;
+    _this.__controllerKey = 0;
     _this.__clock = 0;
     return _this;
   } //TODO: Needs to somehow sync touch events up with the game clock
@@ -2430,6 +2713,11 @@ function (_Generic) {
       // we have each instance perform a frame step.
       this.__instances.forEach(function (inst) {
         inst.preStep(time);
+      }); // we have each instance perform a frame step.
+
+
+      this.__controllers.forEach(function (cont) {
+        cont.preStep(time);
       });
     }
   }, {
@@ -2438,7 +2726,14 @@ function (_Generic) {
       // we have each instance perform a frame step.
       this.__instances.forEach(function (inst) {
         inst.postStep(time);
+      }); // we have each instance perform a frame step.
+
+
+      this.__controllers.forEach(function (cont) {
+        cont.postStep(time);
       });
+
+      this.__removeControllers();
 
       this.__removeParticleEmitters();
 
@@ -2452,6 +2747,11 @@ function (_Generic) {
       var _this3 = this;
 
       this.__preStep(++this.__clock); // we have each instance perform a frame step.
+
+
+      this.__controllers.forEach(function (cont) {
+        cont.step(_this3.__clock);
+      }); // we have each instance perform a frame step.
 
 
       this.__particleEmitters.forEach(function (part) {
@@ -2511,7 +2811,11 @@ function (_Generic) {
   }, {
     key: "__removeInstances",
     value: function __removeInstances() {
-      disjoinArray2FromArray1(this.__instances, this.__toRemoveInstances, this.__removeFromCollisionGroup);
+      if (!this.__toRemoveInstances.length) {
+        return;
+      }
+
+      Functions.disjoinArray2FromArray1(this.__instances, this.__toRemoveInstances, this.__removeFromCollisionGroup);
       this.__toRemoveInstances = [];
     }
   }, {
@@ -2561,7 +2865,11 @@ function (_Generic) {
   }, {
     key: "__removeViews",
     value: function __removeViews() {
-      disjoinArray2FromArray1(this.__views, this.__toRemoveViews);
+      if (!this.__toRemoveViews.length) {
+        return;
+      }
+
+      Functions.disjoinArray2FromArray1(this.__views, this.__toRemoveViews);
       this.__toRemoveViews = [];
     }
   }, {
@@ -2604,13 +2912,59 @@ function (_Generic) {
   }, {
     key: "__removeParticleEmitters",
     value: function __removeParticleEmitters() {
-      disjoinArray2FromArray1(this.__particleEmitters, this.__toRemoveParticleEmitters);
+      if (!this.__toRemoveParticleEmitters.length) {
+        return;
+      }
+
+      Functions.disjoinArray2FromArray1(this.__particleEmitters, this.__toRemoveParticleEmitters);
       this.__toRemoveParticleEmitters = [];
     }
   }, {
     key: "getParticleEmitters",
     value: function getParticleEmitters() {
       return this.__particleEmitters;
+    }
+    /****************************************************************************
+     PARTICLE FUNCTIONS
+     ****************************************************************************/
+
+  }, {
+    key: "addController",
+    value: function addController(controller) {
+      if (controller.__id) {
+        throw "Emitter already added";
+      }
+
+      controller.__id = ++this.__controllerKey;
+
+      this.__controllers.push(controller);
+
+      return controller;
+    }
+  }, {
+    key: "removeController",
+    value: function removeController(controller) {
+      if (controller.__id) {
+        // we add their id to the array of emitters to remove
+        this.__toRemoveControllers.push(controller);
+      }
+
+      return controller;
+    }
+  }, {
+    key: "__removeControllers",
+    value: function __removeControllers() {
+      if (!this.__toRemoveControllers.length) {
+        return;
+      }
+
+      Functions.disjoinArray2FromArray1(this.__controllers, this.__toRemoveControllers);
+      this.__toRemoveControllers = [];
+    }
+  }, {
+    key: "getControllers",
+    value: function getControllers() {
+      return this.__controllers;
     }
     /****************************************************************************
      BACKGROUND FUNCTIONS
@@ -2667,7 +3021,7 @@ function (_Generic) {
 module.exports = World;
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
