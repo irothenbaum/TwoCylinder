@@ -2,59 +2,70 @@
     This script creates a basic user interface
 */
 
-TwoCylinder.IO.Event = TwoCylinder.Engine.BoundingPoint.extend({
-    initialize : function(evt, view){
+const BoundingPoint = require('../engine/bounding/bounding_point')
+const Geometry = require('../engine/utilities').Geometry
+
+class Event extends BoundingPoint {
+    static EVENT_TYPES = {
+        TAP : 'tap',
+        DOUBLE : 'doubletap',
+        LONG :'longtap',
+        MOVE : 'mousemove',
+        UP : 'mouseup',
+        DOWN : 'mousedown'
+    }
+
+    constructor (evt, view){
+        super (evt, view)
         // -----------------------------------------------------
         // This part was taken from Stack Overflow
         // http://stackoverflow.com/questions/8389156
-        var el = evt.target,
+        let el = evt.target,
             x = 0,
-            y = 0;
+            y = 0
 
         while (el && !isNaN(el.offsetLeft) && !isNaN(el.offsetTop)) {
-            x += el.offsetLeft - el.scrollLeft;
-            y += el.offsetTop - el.scrollTop;
-            el = el.offsetParent;
+            x += el.offsetLeft - el.scrollLeft
+            y += el.offsetTop - el.scrollTop
+            el = el.offsetParent
         }
         // -----------------------------------------------------
         
         this._super('initialize',{
             x : evt.clientX - x
             ,y : evt.clientY - y
-        });
+        })
         
-        if(view){
-            this.world_x = this.x + view.getBounding().origin_x;
-            this.world_y = this.y + view.getBounding().origin_y;
-            var rect = view.getCanvas().getBoundingClientRect();
-            this.device_x = this.x + rect.left;
-            this.device_y = this.y + rect.top;
+        if (view){
+            this.world_x = this.x + view.getBounding().origin_x
+            this.world_y = this.y + view.getBounding().origin_y
+            let rect = view.getCanvas().getBoundingClientRect()
+            this.device_x = this.x + rect.left
+            this.device_y = this.y + rect.top
         }
         
-        this.timestamp = Date.now();
+        this.timestamp = Date.now()
     }
-    ,linkEvent : function(evt){
+    linkEvent (evt){
         // we want them to only link events
-        if(evt instanceof TwoCylinder.IO.Event){
+        if(evt instanceof Event){
             this.linked_event = evt; 
-            this.velocity = TwoCylinder.Engine.Geometry.pointToPoint(this.linked_event, this);
+            this.velocity = Geometry.pointToPoint(this.linked_event, this)
         }
         
-        return this;
+        return this
     }
-    ,setType : function(eventType){
-        if( _.indexOf(_.values(TwoCylinder.IO.EVENT_TYPES), eventType) !== -1){
-            this.type = eventType;
-            return this;
-        }else{
-            return false;
+    setType (eventType){
+        if(Event.EVENT_TYPES.values().indexOf(eventType) === -1){
+            throw "Invalid event type"
         }
+        this.type = eventType
+        return this
     }
-    ,getType : function(){
-        if(this.type){
-            return this.type;
-        }else{
-            return null;
-        }
+    getType (){
+        return this.type ? this.type : null;
     }
-});
+}
+
+
+module.exports = Event

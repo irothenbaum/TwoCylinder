@@ -2,44 +2,50 @@
  This script defines the Vector object
  */
 
-TwoCylinder.Engine.Vector = TwoCylinder.Engine.Root.extend({
-    initialize : function(options) {
-        options = _.extend({
+const Root = require('root')
+const Constants = require('utilities').Constants
+
+class Vector extends Root {
+    constructor (options) {
+        super (options)
+        options = Object.assign({
             direction : 0,
             speed : 0
-        },options);
+        },options)
 
-        this.__direction = options.direction;
-        this.__speed = options.speed;
+        this.__direction = options.direction
+        this.__speed = options.speed
     }
 // ------------------------------------
 // GETTERS / SETTERS
 // ------------------------------------
-    ,getDirection : function(){
-        return this.__direction;
+    getDirection (){
+        return this.__direction
     }
-    ,getSpeed : function(){
-        return this.__speed;
+    getSpeed (){
+        return this.__speed
     }
-    ,setDirection : function(dir){
-        this.__direction = dir;
+    setDirection (dir){
+        this.__direction = dir
     }
-    ,setSpeed : function (speed) {
-        this.__speed = speed;
+    setSpeed  (speed) {
+        this.__speed = speed
     }
 // ------------------------------------
 // CONVENIENCE FUNCTIONS
 // ------------------------------------
-    ,rotateTowards : function(dir, friction){
-        var currentDirection = this.getDirection();
-        var TAU = ( 2 * Math.PI );
-        var directionDiff = (dir + TAU - currentDirection) % TAU;
+    rotateTowards (dir, friction){
+        let currentDirection = this.getDirection()
+        let directionDiff = (dir + Constants.TAU - currentDirection) % Constants.TAU
 
-        friction = friction ? friction : 1;
+        friction = friction ? friction : 1
         if (directionDiff <= (Math.PI) ){
-            this.setDirection(currentDirection + (directionDiff / friction));
+            this.setDirection(currentDirection + (directionDiff / friction))
         }else{
-            this.setDirection(currentDirection - ( ( directionDiff - Math.PI ) / friction));
+            this.setDirection(currentDirection - ( ( directionDiff - Math.PI ) / friction))
         }
     }
-});
+}
+
+
+module.exports = Vector

@@ -1,280 +1,240 @@
-/*
-    This script sets up the world canvas.
-    Pass options to this object defining things like framerate, dimensions, etc
-*/
+const Generic = require('generic')
+const Background = require('background')
+const BoundingBox = require('bounding/bounding_box')
+const Functions = require('utilities').Functions
 
-TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
-    initialize : function(options){
-        options.bounding = new TwoCylinder.Engine.BoundingBox({
+class World extends Generic {
+    constructor (options) {
+        options.bounding = new BoundingBox({
             origin_x : 0
             ,origin_y : 0
             ,width : options.width
             ,height : options.height
-        });
-        this._super('initialize',options);
-        this._fps = options.fps || 30;
-        
-        this.__instances = [];
-        this.__particleEmitters = [];
-        this.__views = [];
+        })
+        super(options)
+        this._fps = options.fps || 30
 
-        this.__toRemoveParticleEmitters = [];
-        this.__toRemoveInstances = [];
-        this.__toRemoveViews = [];
+        this.__instances = []
+        this.__particleEmitters = []
+        this.__views = []
 
-        this.__collisionGroups = {};
-        this.__background = options.background || new TwoCylinder.Engine.Background();
-        
-        this.__instanceKey = 0;
-        this.__viewKey = 0;
-        this.__emitterKey = 0;
-        this.__clock = 0;
+        this.__toRemoveParticleEmitters = []
+        this.__toRemoveInstances = []
+        this.__toRemoveViews = []
+
+        this.__collisionGroups = {}
+        this.__background = options.background || new Background()
+
+        this.__instanceKey = 0
+        this.__viewKey = 0
+        this.__emitterKey = 0
+        this.__clock = 0
     }
-    
-/****************************************************************************
- CONTROLLER FUNCTIONS
- ****************************************************************************/
+
     //TODO: Needs to somehow sync touch events up with the game clock
-    ,start : function(){
-        var that = this;
-        this.__intervalId = setInterval(function(){
+    start (){
+        this.__intervalId = setInterval(() => {
             try{
-                that.loop.apply(that,[]);
+                this.loop.apply(this, [])
             } catch (e) {
-                that.exit(e);
+                this.exit(e)
             }
-        }, 1000 / this._fps);
+        }, 1000 / this._fps)
     }
-    
-    ,__preStep : function(time){
-        // we have each instance perform a frame step.
-        _.each(this.__instances, function(inst){
-            inst.preStep(time);
-        });
-    }
-    
-    ,__postStep : function(time){
-        // we have each instance perform a frame step.
-        _.each(this.__instances, function(inst){
-            inst.postStep(time);
-        });
 
-        this.__removeParticleEmitters();
-        this.__removeViews();
-        this.__removeInstances();
-    }
-    
-    ,loop : function(){
-        this.__preStep(++this.__clock);
-        var that = this;
-
+    __preStep (time){
         // we have each instance perform a frame step.
-        _.each(this.__particleEmitters, function(part) {
-            part.step(that.__clock);
-        });
+        this.__instances.forEach((inst) => {
+            inst.preStep(time)
+        })
+    }
+
+    __postStep (time){
+        // we have each instance perform a frame step.
+        this.__instances.forEach((inst) => {
+            inst.postStep(time)
+        })
+
+        this.__removeParticleEmitters()
+        this.__removeViews()
+        this.__removeInstances()
+    }
+
+    loop (){
+        this.__preStep(++this.__clock)
 
         // we have each instance perform a frame step.
-        _.each(this.__instances, function(inst) {
-            inst.step(that.__clock);
-        });
+        this.__particleEmitters.forEach((part) => {
+            part.step(this.__clock)
+        })
+
+        // we have each instance perform a frame step.
+        this.__instances.forEach((inst) => {
+            inst.step(this.__clock)
+        })
 
         // check for collisions
-        _.each(this.__instances, function(me) {
+        this.__instances.forEach((me) => {
             if (me.hasCollisionChecking()) {
-                var myCollisionGroups = me.getCollidableGroups();
-                _.each(myCollisionGroups, function(group){
+                let myCollisionGroups = me.getCollidableGroups()
+                myCollisionGroups.forEach((group) => {
                     // if there are instances that match the groups im listening for
-                    if (that.__collisionGroups[group] && that.__collisionGroups[group].length) {
+                    if (this.__collisionGroups[group] && this.__collisionGroups[group].length) {
 
                         // for each of those matching instance types,
-                        _.each(that.__collisionGroups[group], function(other){
+                        this.__collisionGroups[group].forEach( (other) => {
 
                             // if they're not me, and I collide with them
-                            if (me.__id != other.__id && me.collides(other.getBounding())) {
-                                me.handleCollidedWith(other);
+                            if (me.__id !== other.__id && me.collides(other.getBounding())) {
+                                me.handleCollidedWith(other)
                             }
-                        });
+                        })
                     }
-                });
+                })
             }
-        });
+        })
 
         // draw the views
-        _.each(this.__views, function(view){
-            view.draw(that.__clock);
-        });
+        this.__views.forEach((view) => {
+            view.draw(this.__clock)
+        })
 
-        this.__postStep(this.__clock);
+        this.__postStep(this.__clock)
     }
-    
-    ,exit : function(){
-        clearInterval(this.__intervalId);
-        
+
+    exit (){
+        clearInterval(this.__intervalId)
+
         //TODO: handle exit
     }
-    
-/****************************************************************************
- INSTANCE FUNCTIONS
- ****************************************************************************/    
-    ,removeInstance : function(instance){
+
+    /****************************************************************************
+     INSTANCE FUNCTIONS
+     ****************************************************************************/
+    removeInstance (instance){
         if(instance.__id){
             // we add their id to the array of instances to remove
-            this.__toRemoveInstances.push(instance.__id);
+            this.__toRemoveInstances.push(instance)
         }
-        return instance;
+        return instance
     }
-    ,__removeInstances : function() {
-        if (!this.__toRemoveInstances.length) {
-            return;
-        }
-        var i;
-        var j;
-        for (i=0; i<this.__toRemoveInstances.length; i++) {
-            for(j=0; j<this.__instances.length; j++){
-                if(this.__instances[j].__id == this.__toRemoveInstances[i]){
-                    this.__removeFromCollisionGroup(this.__instances[j]);
-                    delete this.__instances[j].__id;
-                    this.__instances.splice(j,1);
-                    break;
-                }
-            }
-        }
+    __removeInstances () {
+        disjoinArray2FromArray1(this.__instances, this.__toRemoveInstances, this.__removeFromCollisionGroup)
+        this.__toRemoveInstances = []
+    }
 
-        this.__toRemoveInstances = [];
-    }
-    
-    ,addInstance : function(instance){
+    addInstance (instance){
         if(instance.__id){
-            throw "Instance already added";
+            throw "Instance already added"
         }
-        instance.__id = ++this.__instanceKey;
+        instance.__id = ++this.__instanceKey
         // add it to the big list
-        this.__instances.push(instance);
+        this.__instances.push(instance)
         // also add it according to its collision group
-        this.__addToCollisionGroup(instance);
-        
-        return instance;
+        this.__addToCollisionGroup(instance)
+
+        return instance
     }
-    
-    ,getInstances : function(){
-        return this.__instances;
+
+    getInstances (){
+        return this.__instances
     }
-    
-/****************************************************************************
- VIEW FUNCTIONS
- ****************************************************************************/
-    ,addView : function(view){
+
+    /****************************************************************************
+     VIEW FUNCTIONS
+     ****************************************************************************/
+    addView (view){
         if (view.__id) {
-            throw "View already added";
+            throw "View already added"
         }
-        view.__id = ++this.__viewKey;
-        view.setWorld(this);
-        this.__views.push(view);
-        
-        return view;
-    }
-    
-    ,getViews : function(){
-        return this.__views;
+        view.__id = ++this.__viewKey
+        view.setWorld(this)
+        this.__views.push(view)
+
+        return view
     }
 
-    ,__removeViews : function() {
-        if (!this.__toRemoveViews.length) {
-            return;
-        }
-        var i;
-        var j;
-        for (i=0; i<this.__toRemoveViews.length; i++) {
-            for(j=0; j<this.__views.length; j++){
-                if(this.__views[j].__id == this.__toRemoveViews[i]){
-                    delete this.__views[j].__id;
-                    this.__views.splice(j,1);
-                    break;
-                }
-            }
-        }
-
-        this.__toRemoveViews = [];
+    getViews (){
+        return this.__views
     }
-    
-    ,removeView : function(view){
+
+    __removeViews () {
+        disjoinArray2FromArray1(this.__views, this.__toRemoveViews)
+
+        this.__toRemoveViews = []
+    }
+
+    removeView (view){
         if(view.__id) {
-            // we add their id to the array of views to remove
-            this.__toRemoveViews.push(view.__id);
+            // we add them to the array of views to remove
+            this.__toRemoveViews.push(view)
         }
-        return view;
-    }
-    
-/****************************************************************************
-PARTICLE FUNCTIONS
-****************************************************************************/
-    ,addParticleEmitter : function(emitter){
-        if (emitter.__id){
-            throw "Emitter already added";
-        }
-        emitter.__id = ++this.__emitterKey;
-        this.__particleEmitters.push(emitter);
-        return emitter;
+        return view
     }
 
-    ,removeParticleEmitter : function(emitter){
+    /****************************************************************************
+     PARTICLE FUNCTIONS
+     ****************************************************************************/
+    addParticleEmitter (emitter){
+        if (emitter.__id){
+            throw "Emitter already added"
+        }
+        emitter.__id = ++this.__emitterKey
+        this.__particleEmitters.push(emitter)
+        return emitter
+    }
+
+    removeParticleEmitter (emitter){
         if (emitter.__id) {
             // we add their id to the array of emitters to remove
-            this.__toRemoveParticleEmitters.push(emitter.__id);
+            this.__toRemoveParticleEmitters.push(emitter)
         }
-        return emitter;
+        return emitter
     }
-    ,__removeParticleEmitters : function(){
-        if (!this.__toRemoveParticleEmitters.length) {
-            return;
-        }
-        var i;
-        var j;
-        for(i=0; i<this.__toRemoveParticleEmitters.length; i++) {
-            for(j=0; j<this.__particleEmitters.length; j++){
-                if(this.__particleEmitters[j].__id == this.__toRemoveParticleEmitters[i]){
-                    delete this.__particleEmitters[j].__id;
-                    this.__particleEmitters.splice(j,1);
-                    break;
-                }
-            }
-        }
+    __removeParticleEmitters (){
+        disjoinArray2FromArray1(this.__particleEmitters, this.__toRemoveParticleEmitters)
 
-        this.__toRemoveParticleEmitters = [];
+        this.__toRemoveParticleEmitters = []
     }
-    ,getParticleEmitters : function() {
-        return this.__particleEmitters;
+    getParticleEmitters () {
+        return this.__particleEmitters
     }
-/****************************************************************************
-BACKGROUND FUNCTIONS
-****************************************************************************/
-    ,setBackground : function(background){
-        this.__background = background;
+    /****************************************************************************
+     BACKGROUND FUNCTIONS
+     ****************************************************************************/
+    setBackground (background){
+        this.__background = background
     }
-    
-    ,getBackground : function(){
-        return this.__background;
+
+    getBackground (){
+        return this.__background
     }
-/****************************************************************************
-HELPER FUNCTIONS
-****************************************************************************/
-    ,__addToCollisionGroup : function(instance){
-        var group = instance.getCollisionGroup();
+    /****************************************************************************
+     HELPER FUNCTIONS
+     ****************************************************************************/
+    __addToCollisionGroup (instance){
+        let group = instance.getCollisionGroup()
 
         if(!this.__collisionGroups[group]){
-            this.__collisionGroups[group] = [];
+            this.__collisionGroups[group] = []
         }
-        this.__collisionGroups[group].push(instance);
+        this.__collisionGroups[group].push(instance)
     }
-    ,__removeFromCollisionGroup : function(instance){
-        var i;
-        var group = instance.getCollisionGroup();
+    __removeFromCollisionGroup (instance){
+        let i
+        let group = instance.getCollisionGroup()
+
+        if (!this.__collisionGroups[group]) {
+            throw "Collision Group does not exist"
+        }
 
         for(i=0; i<this.__collisionGroups[group].length; i++){
-            if(this.__collisionGroups[group][i].__id == instance.__id){
-                this.__collisionGroups[group].splice(i,1);
-                break;
+            if(this.__collisionGroups[group][i].__id === instance.__id){
+                this.__collisionGroups[group].splice(i,1)
+                break
             }
         }
     }
-});
+}
+
+module.exports = World

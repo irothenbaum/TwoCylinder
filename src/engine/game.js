@@ -1,30 +1,26 @@
-/*
-    This script defines a game object
-    This is an abstract class that ducktypes what a "game" must be able to do.
-    
-    
-    
-    THINGS TO WORK OUT
-    - Instance to instance collision checking
-    - World backgrounds?
-        - Scaling and rotating world backgrounds consistently between views
-    - TEST
-*/
+const Generic = require('generic')
 
-TwoCylinder.Engine.Game = TwoCylinder.Engine.Generic.extend({
-    start : function(){
+class Game extends Generic {
+    constructor () {
+        super()
+        this.__world = undefined;
+    }
+
+    start (){
         return this.getWorld().start();
     }
 
-    ,exit : function(){
+    exit (){
         return this.getWorld().exit();
     }
-    
-    ,setWorld : function(w){
+
+    setWorld (w){
         this.__world = w;
     }
-    
-    ,getWorld : function(){
+
+    getWorld (){
         return this.__world;
     }
-});
+}
+
+module.exports = Game

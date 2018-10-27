@@ -3,21 +3,24 @@
     At most, there should be one per world. 
 */
 
-TwoCylinder.Engine.Background = TwoCylinder.Engine.Root.extend({
-    initialize : function(options){
-        options = _.extend({
+class Background extends Root {
+    constructor (options) {
+        super(options)
+        options = Object.assign({
             color : 'transparent'
-        },options);
-        this._color = options.color;
+        }, options)
+        this._color = options.color
     }
-    ,draw : function(view){
-        var canvas = view.getCanvas();
-        var containingRectangle = view.getBounding().getContainingRectangle();
-        var context = canvas.getContext('2d');
-        context.beginPath();
-        context.fillStyle = this._color;
-        context.fillRect(0,0,containingRectangle.width,containingRectangle.height);
-        context.fill();
-        context.stroke();
+    draw (view){
+        let canvas = view.getCanvas()
+        let containingRectangle = view.getBounding().getContainingRectangle()
+        let context = canvas.getContext('2d')
+        context.beginPath()
+        context.fillStyle = this._color
+        context.fillRect(0,0,containingRectangle.width,containingRectangle.height)
+        context.fill()
+        context.stroke()
     }
-});
+}
+
+module.exports = Background

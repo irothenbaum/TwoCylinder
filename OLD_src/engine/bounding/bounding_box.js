@@ -1,28 +1,23 @@
 // RectangleProfiles need an origin x,y and a width and height
-const Bounding = require('bounding')
-const Geometry = require('../utilities').Geometry
-const BoundingCircle = require('bounding_circle')
-const BoundingPoint = require('bounding_point')
-
-class BoundingBox extends Bounding {
-    getCenter (){
+TwoCylinder.Engine.BoundingBox = TwoCylinder.Engine.Bounding.extend({
+    getCenter : function(){
         return {
             x : this.origin_x + (this.width / 2)
             , y : this.origin_y + (this.height / 2)
         };
     }
-    setCenter (tuple){
+    ,setCenter : function(tuple){
         this.origin_x = tuple.x - (this.width / 2);
         this.origin_y = tuple.y - (this.height / 2);
     }
     // TODO: This won't work properly with circles... Perhaps move it to the Geometry function and treat it like collisions
-    setCenterWithinBounding (tuple, bounding){
-        let containingBox = bounding.getContainingRectangle();
-        let myBox = this.getContainingRectangle();
+    ,setCenterWithinBounding : function(tuple, bounding){
+        var containingBox = bounding.getContainingRectangle();
+        var myBox = this.getContainingRectangle();
         
         
-        let targetX = tuple.x;
-        let targetY = tuple.y;
+        var targetX = tuple.x;
+        var targeyY = tuple.y;
         
         if(containingBox.width < myBox.width){
             targetX = bounding.getCenter().x;
@@ -48,8 +43,7 @@ class BoundingBox extends Bounding {
         
         this.setCenter({ x : targetX , y : targetY });
     }
-
-    getContainingRectangle (){
+    ,getContainingRectangle : function(){
         return {
             origin_x : this.origin_x
             ,origin_y : this.origin_y
@@ -57,22 +51,19 @@ class BoundingBox extends Bounding {
             ,height : this.height
         };
     }
-
-    collides (bounding){
-        if(bounding instanceof BoundingBox){
-            return Geometry.boxCollidesBox(this,bounding)
-        }else if(bounding instanceof BoundingCircle){
-            return Geometry.boxCollidesCircle(this,bounding);
-        }else if(bounding instanceof BoundingPoint){
-            return Geometry.boxCollidesPoint(this,bounding);
-        }else if(bounding instanceof Bounding){
+    ,collides : function(bounding){
+        if(bounding instanceof TwoCylinder.Engine.BoundingBox){
+            return TwoCylinder.Engine.Geometry.boxCollidesBox(this,bounding)
+        }else if(bounding instanceof TwoCylinder.Engine.BoundingCircle){
+            return TwoCylinder.Engine.Geometry.boxCollidesCircle(this,bounding);
+        }else if(bounding instanceof TwoCylinder.Engine.BoundingPoint){
+            return TwoCylinder.Engine.Geometry.boxCollidesPoint(this,bounding);
+        }else if(bounding instanceof TwoCylinder.Engine.Bounding){ 
             // if it's not a rectangle, circle, or point, it could be a new type of bounding
             // in which case we let it handle the collision checking
             return bounding.collides(this);
         }else{ // treat bounding like a tuple
-            return Geometry.boxCollidesPoint(this, bounding);
+            return TwoCylinder.Engine.Geometry.boxCollidesPoint(this, bounding);
         }
     }
-}
-
-module.exports = BoundingBox
+});
