@@ -2,7 +2,9 @@
     This script creates a basic user interface
 */
 
-const Event = require('event')
+const Event = require('./event')
+const Geometry = require('../engine/utilities').Geometry
+const Generic = require('../engine/generic')
 
 class Touch extends Generic {
     constructor (options){
@@ -93,11 +95,11 @@ class Touch extends Generic {
     /*
      * Appearance will be important for extended objects wishing to give the touch zones a visual represenation
      */
-    ,setAppearance (app){
+    setAppearance (app){
         this.__appearance = app
     }
     
-    ,getAppearance (app){
+    getAppearance (app){
         return this.__appearance
     }
     
@@ -142,7 +144,7 @@ class Touch extends Generic {
         }
         
         // next we check for LONG tap
-        if(!found && this.__lastDown && (TwoCylinder.Engine.Geometry.distanceToPoint(this.__lastDown, event) < this._tapDistanceThreshold)){
+        if(!found && this.__lastDown && (Geometry.distanceToPoint(this.__lastDown, event) < this._tapDistanceThreshold)){
             let lastDownDiff = event.timestamp - this.__lastDown.timestamp
             if(lastDownDiff <= this._tapThreshold){
                 event.setType(Event.EVENT_TYPES.TAP)
@@ -178,7 +180,7 @@ class Touch extends Generic {
         if( 
             ( (event.timestamp - this.__lastDown.timestamp) <= this._longTapCancel)
             &&
-            (TwoCylinder.Engine.Geometry.distanceToPoint(this.__lastDown, event) < this._tapDistanceThreshold)
+            (Geometry.distanceToPoint(this.__lastDown, event) < this._tapDistanceThreshold)
         ){
             // if they haven't moved their finger enough and we're within the longtap threshold
             return

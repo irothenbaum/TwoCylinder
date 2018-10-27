@@ -1,8 +1,8 @@
 // RectangleProfiles need an origin x,y and a width and height
-const Bounding = require('bounding')
+const Bounding = require('./bounding')
 const Geometry = require('../utilities').Geometry
-const BoundingCircle = require('bounding_circle')
-const BoundingPoint = require('bounding_point')
+const BoundingCircle = require('./bounding_circle')
+const BoundingPoint = require('./bounding_point')
 
 class BoundingBox extends Bounding {
     getCenter (){

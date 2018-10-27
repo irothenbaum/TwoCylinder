@@ -1,6 +1,6 @@
-const Generic = require('generic')
+const Root = require('./root')
 
-class Game extends Generic {
+class Game extends Root {
     constructor () {
         super()
         this.__world = undefined;

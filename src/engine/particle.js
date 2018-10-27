@@ -1,7 +1,7 @@
 /*
  This script defines the particle object
  */
-const Root = require('root')
+const Root = require('./root')
 
 
 class Particle extends Root {

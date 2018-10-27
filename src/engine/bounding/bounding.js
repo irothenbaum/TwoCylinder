@@ -2,7 +2,7 @@
     Profiles are used to remove the ambiguity with determining bounding box
 */
 
-const Root = require('../enginer/root')
+const Root = require('../root')
 
 class Bounding extends Root {
     constructor (options){

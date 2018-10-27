@@ -2,8 +2,8 @@
  This script defines the Vector object
  */
 
-const Root = require('root')
-const Constants = require('utilities').Constants
+const Root = require('./root')
+const Constants = require('./utilities').Constants
 
 class Vector extends Root {
     constructor (options) {

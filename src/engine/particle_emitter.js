@@ -1,4 +1,5 @@
-const Functions = require('utilities').Functions
+const Functions = require('./utilities').Functions
+const Generic = require('./generic')
 
 class ParticleEmitter extends Generic {
     constructor(options) {

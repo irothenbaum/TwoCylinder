@@ -1,7 +1,7 @@
-const Generic = require('generic')
-const Background = require('background')
-const BoundingBox = require('bounding/bounding_box')
-const Functions = require('utilities').Functions
+const Generic = require('./generic')
+const Background = require('./background')
+const BoundingBox = require('./bounding/bounding_box')
+const Functions = require('./utilities').Functions
 
 class World extends Generic {
     constructor (options) {

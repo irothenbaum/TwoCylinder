@@ -1,4 +1,4 @@
-const Vector = require('vector')
+const Vector = require('./vector')
 
 Constants = {
     TAU : Math.PI * 2

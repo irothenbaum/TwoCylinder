@@ -3,7 +3,7 @@
     Appearances are attached to instances and define how that instance should be drawn in the world
 */
 
-const Generic = require('generic')
+const Generic = require('./generic')
 
 class Appearance extends Generic {
     constructor (options) {

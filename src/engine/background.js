@@ -3,6 +3,8 @@
     At most, there should be one per world. 
 */
 
+const Root = require('./root')
+
 class Background extends Root {
     constructor (options) {
         super(options)

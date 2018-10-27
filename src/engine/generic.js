@@ -1,11 +1,11 @@
-const Root = require('root')
-const Bounding = require ('bounding')
+const Root = require('./root')
+const Bounding = require ('./bounding/bounding')
 
 class Generic extends Root {
 
     constructor (options) {
         super (options)
-        this.setBoundingBod(options.bounding)
+        this.setBoundingBox(options.bounding)
     }
 
     collides (bounding) {

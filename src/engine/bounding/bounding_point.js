@@ -1,9 +1,9 @@
 // CircleProfiles need a center point and a radius
 
-const Bounding = require('bounding')
+const Bounding = require('./bounding')
 const Geometry = require('../utilities').Geometry
-const BoundingBox = require('bounding_box')
-const BoundingCircle = require('bounding_circle')
+const BoundingBox = require('./bounding_box')
+const BoundingCircle = require('./bounding_circle')
 
 class BoundingPoint extends Bounding {
     getCenter (){

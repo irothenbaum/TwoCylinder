@@ -2,9 +2,10 @@
     This script handles drawing the joystick appearance
 */
 
-const Touch = require('touch')
-const BoundingCircle = require('../enginer/bounding/bounding_circle')
+const Touch = require('./touch')
+const BoundingCircle = require('../engine/bounding/bounding_circle')
 const {Geometry, Functions} = require('../engine/utilities')
+const JoystickSprite = require('../sprites/joystick')
 
 class Joystick extends Touch {
     constructor (options){
@@ -25,7 +26,7 @@ class Joystick extends Touch {
         // the operate function is what we will pass joystick motions to
         this.__operateFunction = null
         
-        this.__appearance = new TwoCylinder.Sprites.Joystick()
+        this.__appearance = new JoystickSprite()
         
         this._previousEvent = null
         

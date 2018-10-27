@@ -1,7 +1,7 @@
-const Generic = require('generic')
-const Appearance = require('appearance')
-const Vector = require('vector')
-const BoundingPoint = require('bounding/bounding_point')
+const Generic = require('./generic')
+const Appearance = require('./appearance')
+const Vector = require('./vector')
+const BoundingPoint = require('./bounding/bounding_point')
 
 class Entity extends Generic {
     constructor (options){

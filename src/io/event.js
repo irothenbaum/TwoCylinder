@@ -6,13 +6,15 @@ const BoundingPoint = require('../engine/bounding/bounding_point')
 const Geometry = require('../engine/utilities').Geometry
 
 class Event extends BoundingPoint {
-    static EVENT_TYPES = {
-        TAP : 'tap',
-        DOUBLE : 'doubletap',
-        LONG :'longtap',
-        MOVE : 'mousemove',
-        UP : 'mouseup',
-        DOWN : 'mousedown'
+    static get EVENT_TYPES() {
+        return {
+            TAP : 'tap',
+            DOUBLE : 'doubletap',
+            LONG :'longtap',
+            MOVE : 'mousemove',
+            UP : 'mouseup',
+            DOWN : 'mousedown'
+        };
     }
 
     constructor (evt, view){

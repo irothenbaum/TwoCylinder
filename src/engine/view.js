@@ -3,8 +3,8 @@
     Views are attached to this.__worlds and help determine which instances should be drawn to the this.__canvas and where
 */
 
-const Generic = require('generic')
-const Functions = require('utilities').Functions
+const Generic = require('./generic')
+const Functions = require('./utilities').Functions
 
 class View extends Generic {
     constructor (options){
